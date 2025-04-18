@@ -1,0 +1,69 @@
+definitions:
+  domain.Profile:
+    properties:
+      image:
+        type: string
+      username:
+        type: string
+    type: object
+  rest.UploadProfileInput:
+    properties:
+      image:
+        type: string
+      username:
+        type: string
+    type: object
+  rest.errorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: network project backend server
+  title: Server
+  version: "1.0"
+paths:
+  /profiles:
+    post:
+      consumes:
+      - application/json
+      description: upload user profile
+      parameters:
+      - description: request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/rest.UploadProfileInput'
+      responses:
+        "204":
+          description: No Content
+      summary: upload profile
+      tags:
+      - profiles
+  /profiles/{username}:
+    get:
+      description: get profile by username
+      parameters:
+      - description: username
+        in: path
+        name: username
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Profile'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/rest.errorResponse'
+      summary: get user profile
+      tags:
+      - profiles
+swagger: "2.0"
