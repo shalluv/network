@@ -4,7 +4,7 @@ BIN := bin/server
 DB := main.db
 
 .PHONY: a all
-a all: fmt build db
+a all: fmt docs build db
 
 .PHONY: b build
 b build: $(BIN)
@@ -15,6 +15,7 @@ $(BIN): $(SRCS)
 .PHONY: fmt
 fmt:
 		go fmt ./...
+		swag fmt
 
 .PHONY: clean
 clean:
@@ -25,3 +26,9 @@ db: $(DB)
 
 $(DB):
 	touch $(DB)
+
+.PHONY: docs
+docs: docs/swagger.json
+
+docs/swagger.json: $(SRCS)
+	swag init -q -g ./cmd/main.go

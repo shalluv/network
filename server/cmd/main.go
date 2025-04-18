@@ -10,8 +10,17 @@ import (
 	"github.com/shalluv/network/server/internal/infrastructure/database"
 	"github.com/shalluv/network/server/internal/infrastructure/handler/rest"
 	"github.com/shalluv/network/server/internal/service"
+
+	_ "github.com/shalluv/network/server/docs"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
+//	@title			Server
+//	@version		1.0
+//	@description	network project backend server
+
+// @host	localhost:8080
 func main() {
 	config, err := config.Load()
 	if err != nil {
@@ -31,12 +40,9 @@ func main() {
 	r := gin.Default()
 	r.Use(cors.Default())
 
-	r.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{"message": "pong"})
-	})
-
 	r.POST("/profiles", profileHandler.UploadProfile)
 	r.GET("/profiles/:username", profileHandler.GetProfile)
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	r.Run(fmt.Sprintf(":%d", config.Port))
 }
