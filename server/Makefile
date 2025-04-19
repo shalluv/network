@@ -10,16 +10,16 @@ a all: fmt docs build db
 b build: $(BIN)
 
 $(BIN): $(SRCS)
-		go build -o $@ $(MAIN)
+	go build -o $@ $(MAIN)
 
 .PHONY: fmt
 fmt:
-		go fmt ./...
-		swag fmt
+	go fmt ./...
+	swag fmt
 
 .PHONY: clean
 clean:
-		rm -rf bin
+	rm -rf bin
 
 .PHONY: db
 db: $(DB)
