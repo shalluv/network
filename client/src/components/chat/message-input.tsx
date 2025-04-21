@@ -52,7 +52,12 @@ function MessageInput({ value, onChange, onSend }: MessageInputProps) {
         />
       </div>
       {value.trim() === "" ? (
-        <Heart />
+        <Heart
+          className="cursor-pointer"
+          onClick={() => {
+            onSend("❤️");
+          }}
+        />
       ) : (
         <p
           onClick={handleSend}
