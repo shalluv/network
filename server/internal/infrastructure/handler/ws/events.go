@@ -1,0 +1,57 @@
+package ws
+
+import (
+	"github.com/google/uuid"
+	"github.com/shalluv/network/server/internal/domain"
+)
+
+const (
+	defaultNamespace      string = "default"
+	groupNamespace        string = "group"
+	UserConnectedEvent    string = "user connected"
+	UserDisconnectedEvent string = "user disconnected"
+	PrivateMessageEvent   string = "private message"
+	GroupMessageEvent     string = "group message"
+	MessageDeletedEvent   string = "message deleted"
+	MessageEditedEvent    string = "message edited"
+	JoinedGroupEvent      string = "joined group"
+	LeftGroupEvent        string = "left group"
+	UsersEvent            string = "users"
+)
+
+type UserConnectedEventMsg struct {
+	Username string `json:"username"`
+}
+
+type UserDisconnectedEventMsg struct {
+	Username string `json:"username"`
+}
+
+type PrivateMessageEventMsg struct {
+	From    string `json:"username"`
+	Content string `json:"content"`
+}
+
+type GroupMessageEventMsg struct {
+	From    string `json:"username"`
+	To      string `json:"to"`
+	Content string `json:"content"`
+}
+
+type MessageDeletedEventMsg struct {
+	*domain.Message
+}
+
+type MessageEditedEventMsg struct {
+	*domain.Message
+}
+
+type JoinedGroupEventMsg struct {
+	GroupId  uuid.UUID `json:"group_id"`
+	Username string    `json:"username"`
+}
+
+type LeftGroupEventMsg struct {
+	GroupId  uuid.UUID `json:"group_id"`
+	Username string    `json:"username"`
+}

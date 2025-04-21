@@ -18,3 +18,12 @@ type GroupRepository interface {
 	FindGroupsByUsername(username string) ([]*Group, error)
 	LeaveGroup(groupId uuid.UUID, username string) error
 }
+
+type MessageRepository interface {
+	CreateMessage(message *Message) error
+	FindOneMessageById(id uuid.UUID) (*Message, error)
+	FindGroupMessages(groupId uuid.UUID) ([]*Message, error)
+	FindPrivateMessages(userA string, userB string) ([]*Message, error)
+	UpdateMessage(message *Message) error
+	DeleteMessageById(id uuid.UUID) error
+}

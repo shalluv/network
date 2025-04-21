@@ -1,16 +1,28 @@
 package service
 
 import (
+	"errors"
+
 	"github.com/google/uuid"
 	"github.com/shalluv/network/server/internal/domain"
 )
 
 type Group struct {
-	groupRepo domain.GroupRepository
+	groupRepo      domain.GroupRepository
+	messageRepo    domain.MessageRepository
+	eventPublisher EventPublisher
 }
 
-func NewGroup(groupRepo domain.GroupRepository) *Group {
-	return &Group{groupRepo}
+func NewGroup(groupRepo domain.GroupRepository, messageRepo domain.MessageRepository) *Group {
+	return &Group{
+		groupRepo:   groupRepo,
+		messageRepo: messageRepo,
+	}
+}
+
+// TODO: use domain event?
+func (g *Group) SetEventPublisher(eventPublisher EventPublisher) {
+	g.eventPublisher = eventPublisher
 }
 
 func (g *Group) CreateGroup(name string, username string) (*domain.Group, error) {
@@ -33,7 +45,11 @@ func (g *Group) GetAllGroups() ([]*domain.Group, error) {
 
 func (g *Group) JoinGroup(groupId uuid.UUID, username string) error {
 	groupMember := domain.CreateGroupMember(groupId, username)
-	return g.groupRepo.AddGroupMember(groupMember)
+	if err := g.groupRepo.AddGroupMember(groupMember); err != nil {
+		return err
+	}
+	g.eventPublisher.PublishJoinedGroupEvent(username, groupId)
+	return nil
 }
 
 func (g *Group) GetMembersInGroup(id uuid.UUID) ([]*domain.Profile, error) {
@@ -41,5 +57,21 @@ func (g *Group) GetMembersInGroup(id uuid.UUID) ([]*domain.Profile, error) {
 }
 
 func (g *Group) LeaveGroup(groupId uuid.UUID, username string) error {
-	return g.groupRepo.LeaveGroup(groupId, username)
+	if err := g.groupRepo.LeaveGroup(groupId, username); err != nil {
+		return err
+	}
+	g.eventPublisher.PublishLeftGroupEvent(username, groupId)
+	return nil
+}
+
+func (g *Group) GetGroupChatMessages(groupId uuid.UUID, username string) ([]*domain.Message, error) {
+	isInGroup, err := g.groupRepo.CheckIsUserInGroup(username, groupId)
+	if err != nil {
+		return nil, err
+	}
+	if !isInGroup {
+		return nil, errors.New("unauthorized")
+	}
+
+	return g.messageRepo.FindGroupMessages(groupId)
 }
