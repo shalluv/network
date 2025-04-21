@@ -25,3 +25,7 @@ func (p *Profile) UploadProfile(username string, image string) error {
 func (p *Profile) GetUserProfile(username string) (*domain.Profile, error) {
 	return p.profileRepo.FindOneByUsername(username)
 }
+
+func (p *Profile) GetAllUserProfiles() ([]*domain.Profile, error) {
+	return p.profileRepo.FindAll()
+}

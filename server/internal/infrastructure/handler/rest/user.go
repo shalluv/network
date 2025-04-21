@@ -66,3 +66,22 @@ func (p *profileHandler) GetProfile(c *gin.Context) {
 
 	c.JSON(http.StatusOK, profile)
 }
+
+// GetAllProfiles godoc
+//
+//	@Summary		get all user profiles
+//	@Description	retrieve all user profiles in the system
+//	@Tags			profiles
+//	@Produce		json
+//	@Success		200	{array}		domain.Profile
+//	@Failure		500	{object}	errorResponse
+//	@Router			/profiles [get]
+func (h *profileHandler) GetAllProfiles(c *gin.Context) {
+	profiles, err := h.profileService.GetAllUserProfiles()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, &errorResponse{Error: err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, profiles)
+}
