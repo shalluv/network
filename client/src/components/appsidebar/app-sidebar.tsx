@@ -5,6 +5,7 @@ import { ChatBox } from "./chat-box";
 import { User } from "@/types/user";
 import React from "react";
 import { env } from "@/env";
+import { UserForm } from "./user-form";
 
 function AppSidebar() {
   const [selected, setSelected] = useState<"messages" | "groups">("messages");
@@ -29,7 +30,7 @@ function AppSidebar() {
   return (
     <Sidebar>
       <div className="mt-8 flex w-full justify-between px-4 text-2xl">
-        <span className="font-bold">Admin</span>
+        <UserForm username="Admin" />
         <button className="">
           <SquarePen className="w-6" />
         </button>

@@ -1,9 +1,10 @@
 import { env } from "@/env";
+import { User } from "@/types/user";
 import React from "react";
 import { useState } from "react";
 
 function ChatBox({ username }: { username: string }) {
-  const [profile, setProfile] = useState("");
+  const [profile, setProfile] = useState<User>();
   const [lastMessage, setLastMessage] = useState("");
   const [lastMessageTime, setLastMessageTime] = useState("");
   const read = false;
@@ -37,7 +38,7 @@ function ChatBox({ username }: { username: string }) {
     <div className="flex w-full items-center justify-between px-4 py-2 hover:bg-gray-100">
       <div className="flex items-center gap-3">
         <div className="h-14 w-14 flex-shrink-0 overflow-hidden rounded-full bg-gray-500 shadow-sm">
-          {profile.image && (
+          {profile && (
             <img
               src={profile.image}
               alt="profile"
