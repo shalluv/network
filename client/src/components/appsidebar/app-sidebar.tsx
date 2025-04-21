@@ -61,7 +61,11 @@ function AppSidebar() {
               {users.map(
                 (userProfile, i) =>
                   user?.username != userProfile.username && (
-                    <ChatBox key={i} username={userProfile.username} />
+                    <ChatBox
+                      key={i}
+                      username={userProfile.username}
+                      image={userProfile.image}
+                    />
                   ),
               )}
             </div>
