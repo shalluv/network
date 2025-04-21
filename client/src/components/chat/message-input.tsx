@@ -55,7 +55,7 @@ function MessageInput({ value, onChange, onSend }: MessageInputProps) {
         <Heart
           className="cursor-pointer"
           onClick={() => {
-            onSend("❤️");
+            onSend("💔");
           }}
         />
       ) : (

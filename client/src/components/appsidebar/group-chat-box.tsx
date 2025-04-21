@@ -3,13 +3,15 @@ import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { useNavigate, useParams } from "react-router";
 import { cn } from "@/lib/utils";
+import { User } from "@/types/user";
 
-function ChatBox({ username, image }: { username: string; image: string }) {
+function GroupChatBox({ group, users }: { group: string; users: User[] }) {
   const [lastMessage, setLastMessage] = useState("");
   const [lastMessageTime, setLastMessageTime] = useState("");
   const read = false;
   const navigate = useNavigate();
-  const { othername } = useParams();
+  const { groupid } = useParams();
+  const usernames = users.map((user) => user.username);
 
   React.useEffect(() => {
     async function fetchLastMessage() {
@@ -24,27 +26,40 @@ function ChatBox({ username, image }: { username: string; image: string }) {
     <div
       className={cn(
         "flex w-full items-center justify-between px-4 py-2",
-        othername === username
+        groupid === group
           ? "bg-neutral-200"
           : "bg-transparent hover:bg-neutral-100",
       )}
       onClick={() => {
-        navigate(`/${username}`);
+        navigate(`/group/${group}`);
       }}
     >
       <div className="flex items-center gap-3">
-        <div className="h-14 w-14 flex-shrink-0 overflow-hidden rounded-full bg-gray-500">
-          <Avatar className="h-14 w-14">
-            <AvatarImage src={image} alt={username} />
-            <AvatarFallback>{username.slice(0, 2)}</AvatarFallback>
-          </Avatar>
+        <div className="relative flex w-fit">
+          <div className="size-14 flex-shrink-0 rounded-full">
+            {users.slice(0, 2).map((userProfile, j) => (
+              <Avatar
+                key={userProfile.username}
+                className={cn(
+                  "absolute size-12",
+                  j % 2 === 0 ? "-top-1 -left-1" : "-right-1 -bottom-1",
+                )}
+              >
+                <AvatarImage
+                  src={userProfile.image}
+                  alt={userProfile.username}
+                />
+                <AvatarFallback>{userProfile.username}</AvatarFallback>
+              </Avatar>
+            ))}
+          </div>
         </div>
         <div className="flex flex-col justify-center gap-1 overflow-hidden">
           <span
             className={`w-40 truncate ${read ? "font-normal" : "font-bold"}`}
-            title={username}
+            title={usernames.join(", ")}
           >
-            {username}
+            {usernames.join(", ")}
           </span>
           <div className="flex items-center gap-2 overflow-hidden">
             <span
@@ -70,4 +85,4 @@ function ChatBox({ username, image }: { username: string; image: string }) {
   );
 }
 
-export { ChatBox };
+export { GroupChatBox };

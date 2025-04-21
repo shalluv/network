@@ -9,6 +9,7 @@ import { UserForm } from "./user-form";
 import { useUser } from "@/hooks/use-user";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { cn } from "@/lib/utils";
+import { GroupChatBox } from "./group-chat-box";
 
 function AppSidebar() {
   const [selected, setSelected] = useState<"messages" | "groups">("messages");
@@ -19,6 +20,9 @@ function AppSidebar() {
       { username: "user123", image: "https://i.pravatar.cc/150?img=2" },
     ],
     [
+      { username: "user456", image: "https://i.pravatar.cc/150?img=3" },
+      { username: "user789", image: "https://i.pravatar.cc/150?img=4" },
+      { username: "user101", image: "https://i.pravatar.cc/150?img=5" },
       { username: "user456", image: "https://i.pravatar.cc/150?img=3" },
       { username: "user789", image: "https://i.pravatar.cc/150?img=4" },
       { username: "user101", image: "https://i.pravatar.cc/150?img=5" },
@@ -83,27 +87,9 @@ function AppSidebar() {
               )}
             </div>
           ) : (
-            <div className="flex flex-col gap-4 pt-2 pl-2">
+            <div className="flex flex-col">
               {groups.map((group, i) => (
-                <div key={i} className="relative flex w-fit">
-                  <div className="size-14 flex-shrink-0 rounded-full">
-                    {group.slice(0, 2).map((userProfile, j) => (
-                      <Avatar
-                        key={userProfile.username}
-                        className={cn(
-                          "absolute size-12",
-                          j % 2 === 0 ? "-top-1 -left-1" : "-right-1 -bottom-1",
-                        )}
-                      >
-                        <AvatarImage
-                          src={userProfile.image}
-                          alt={userProfile.username}
-                        />
-                        <AvatarFallback>{userProfile.username}</AvatarFallback>
-                      </Avatar>
-                    ))}
-                  </div>
-                </div>
+                <GroupChatBox key={i} group={i.toString()} users={group} />
               ))}
             </div>
           )}

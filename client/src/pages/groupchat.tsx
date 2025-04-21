@@ -50,6 +50,20 @@ export function GroupChat() {
 
   return (
     <div className="flex size-full flex-col justify-between">
+      {/* <div className="relative h-14 w-[5.6rem] flex-shrink-0 overflow-hidden rounded-full bg-gray-500">
+          {images.slice(0, 3).map((img, index) => (
+            <div
+              key={index}
+              className="absolute"
+              style={{ left: `${index * 20}%`, zIndex: images.length - index }}
+            >
+              <Avatar className="h-14 w-14">
+                <AvatarImage src={img} alt={usernames[index]} />
+                <AvatarFallback>{usernames[index].slice(0, 2)}</AvatarFallback>
+              </Avatar>
+            </div>
+          ))}
+        </div> */}
       <div className="flex w-full flex-col">
         <header className="flex w-full items-center justify-between border-b p-4">
           <div className="flex items-center gap-4">
