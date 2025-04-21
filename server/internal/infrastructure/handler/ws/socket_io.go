@@ -47,9 +47,9 @@ func (s *socketIo) OnConnect(conn socketio.Conn) error {
 		return err
 	}
 
-	s.server.JoinRoom(defaultNamespace, username, conn)
+	s.server.JoinRoom(DefaultNamespace, username, conn)
 	for _, group := range groups {
-		s.server.JoinRoom(groupNamespace, group.Id.String(), conn)
+		s.server.JoinRoom(DefaultNamespace, group.Id.String(), conn)
 	}
 
 	conn.SetContext(username)
@@ -58,7 +58,7 @@ func (s *socketIo) OnConnect(conn socketio.Conn) error {
 	s.mu.Lock()
 	if len(s.userConns[username]) == 0 {
 		msg := UserConnectedEventMsg{Username: username}
-		s.server.BroadcastToNamespace(defaultNamespace, "user connected", &msg)
+		s.server.BroadcastToNamespace(DefaultNamespace, "user connected", &msg)
 	}
 	for user := range s.userConns {
 		if user != username {
@@ -98,7 +98,7 @@ func (s *socketIo) SendPrivateMessage(conn socketio.Conn, msg string) {
 		Content: input.Content,
 	}
 
-	s.server.BroadcastToRoom(defaultNamespace, input.To, PrivateMessageEvent, eventMsg)
+	s.server.BroadcastToRoom(DefaultNamespace, input.To, PrivateMessageEvent, eventMsg)
 }
 
 func (s *socketIo) SendGroupMessage(conn socketio.Conn, msg string) {
@@ -122,7 +122,7 @@ func (s *socketIo) SendGroupMessage(conn socketio.Conn, msg string) {
 		Content: input.Content,
 	}
 
-	s.server.BroadcastToRoom(groupNamespace, input.To, GroupMessageEvent, eventMsg)
+	s.server.BroadcastToRoom(DefaultNamespace, input.To, GroupMessageEvent, eventMsg)
 }
 
 func (s *socketIo) OnDisconnect(conn socketio.Conn, reason string) {
@@ -149,7 +149,7 @@ func (s *socketIo) OnDisconnect(conn socketio.Conn, reason string) {
 
 	if connsLen-1 == 0 {
 		msg := UserDisconnectedEventMsg{Username: username}
-		s.server.BroadcastToNamespace(defaultNamespace, UserDisconnectedEvent, &msg)
+		s.server.BroadcastToNamespace(DefaultNamespace, UserDisconnectedEvent, &msg)
 	}
 	s.mu.Unlock()
 
@@ -161,19 +161,13 @@ func (s *socketIo) OnError(conn socketio.Conn, err error) {
 }
 
 func (s *socketIo) PublishMessageDeletedEvent(chat *domain.Message) {
-	namespace := defaultNamespace
-	if chat.ToGroup {
-		namespace = groupNamespace
-	}
+	namespace := DefaultNamespace
 
 	s.server.BroadcastToNamespace(namespace, MessageDeletedEvent, chat)
 }
 
 func (s *socketIo) PublishMessageEdited(chat *domain.Message) {
-	namespace := defaultNamespace
-	if chat.ToGroup {
-		namespace = groupNamespace
-	}
+	namespace := DefaultNamespace
 
 	s.server.BroadcastToNamespace(namespace, MessageEditedEvent, chat)
 }
@@ -183,11 +177,11 @@ func (s *socketIo) PublishJoinedGroupEvent(username string, groupId uuid.UUID) {
 		GroupId:  groupId,
 		Username: username,
 	}
-	s.server.BroadcastToNamespace(groupNamespace, JoinedGroupEvent, msg)
+	s.server.BroadcastToRoom(DefaultNamespace, groupId.String(), JoinedGroupEvent, msg)
 
 	s.mu.Lock()
 	for _, conn := range s.userConns[username] {
-		s.server.JoinRoom(groupNamespace, groupId.String(), conn)
+		s.server.JoinRoom(DefaultNamespace, groupId.String(), conn)
 	}
 	s.mu.Unlock()
 }
@@ -200,9 +194,9 @@ func (s *socketIo) PublishLeftGroupEvent(username string, groupId uuid.UUID) {
 
 	s.mu.Lock()
 	for _, conn := range s.userConns[username] {
-		s.server.LeaveRoom(groupNamespace, groupId.String(), conn)
+		s.server.LeaveRoom(DefaultNamespace, groupId.String(), conn)
 	}
 	s.mu.Unlock()
 
-	s.server.BroadcastToNamespace(groupNamespace, LeftGroupEvent, msg)
+	s.server.BroadcastToRoom(DefaultNamespace, groupId.String(), LeftGroupEvent, msg)
 }

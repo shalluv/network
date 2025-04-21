@@ -6,8 +6,7 @@ import (
 )
 
 const (
-	defaultNamespace      string = "default"
-	groupNamespace        string = "group"
+	DefaultNamespace      string = "/"
 	UserConnectedEvent    string = "user connected"
 	UserDisconnectedEvent string = "user disconnected"
 	PrivateMessageEvent   string = "private message"

@@ -47,6 +47,12 @@ func main() {
 	groupService.SetEventPublisher(socketIoHandler)
 	messageService.SetEventPublisher(socketIoHandler)
 
+	socketIoServer.OnConnect(ws.DefaultNamespace, socketIoHandler.OnConnect)
+	socketIoServer.OnEvent(ws.DefaultNamespace, ws.PrivateMessageEvent, socketIoHandler.SendPrivateMessage)
+	socketIoServer.OnEvent(ws.DefaultNamespace, ws.GroupMessageEvent, socketIoHandler.SendGroupMessage)
+	socketIoServer.OnDisconnect(ws.DefaultNamespace, socketIoHandler.OnDisconnect)
+	socketIoServer.OnError(ws.DefaultNamespace, socketIoHandler.OnError)
+
 	go func() {
 		if err := socketIoServer.Serve(); err != nil {
 			log.Fatalf("socketio listen error: %s\n", err)
