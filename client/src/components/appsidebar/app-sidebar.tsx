@@ -36,7 +36,7 @@ function AppSidebar() {
         <div className="mb-6">
           {selected === "messages" ? (
             <div className="flex flex-col">
-              //STATIC
+              {/* Static */}
               {Array.from({ length: 100 }, (_, i) => (
                 <ChatBox key={i} username={"admin911"} />
               ))}
