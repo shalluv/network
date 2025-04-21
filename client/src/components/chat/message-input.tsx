@@ -9,14 +9,14 @@ import { Angry, Heart } from "lucide-react";
 type MessageInputProps = {
   value: string;
   onChange: (value: string) => void;
+  onSend: (message: string) => Promise<void>;
 };
 
-function MessageInput({ value, onChange }: MessageInputProps) {
+function MessageInput({ value, onChange, onSend }: MessageInputProps) {
   const handleSend = () => {
     if (value.trim() !== "") {
-      // You can add your actual send logic here
-      console.log("Sending:", value);
-      onChange(""); // Clear the input
+      onSend(value);
+      onChange("");
     }
   };
 

@@ -30,6 +30,10 @@ export function Chat() {
     fetchOther();
   }, [othername]);
 
+  const onSend = async (message: string) => {
+    console.log("Sending message:", message);
+  };
+
   if (loading) {
     return (
       <div className="flex h-full w-full items-center justify-center">
@@ -62,7 +66,11 @@ export function Chat() {
         </div>
       </div>
       <div className="mb-4 flex w-full">
-        <MessageInput value={currentMessage} onChange={setCurrentMessage} />
+        <MessageInput
+          value={currentMessage}
+          onChange={setCurrentMessage}
+          onSend={onSend}
+        />
       </div>
     </div>
   );
