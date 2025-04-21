@@ -8,13 +8,13 @@ import { bubbleVariants } from "./variants";
 import { Avatar, AvatarFallback, AvatarImage } from "../avatar";
 
 import { format } from "date-fns";
-import { env } from "@/env";
+import { User } from "@/types/user";
 
 export interface BubbleProps
   extends React.HTMLAttributes<HTMLDivElement>,
     VariantProps<typeof bubbleVariants> {
   createdAt: Date;
-  sender?: string;
+  sender?: User | null;
 }
 
 function Bubble({
@@ -24,27 +24,6 @@ function Bubble({
   createdAt,
   ...props
 }: BubbleProps) {
-  const [profile, setProfile] = React.useState<{
-    image: string;
-    username: string;
-  } | null>(null);
-
-  React.useEffect(() => {
-    async function fetchProfile() {
-      if (!sender) return;
-      try {
-        const res = await fetch(`${env.VITE_API_URL}/profiles/${sender}`);
-        if (!res.ok) throw Error;
-        const data = await res.json();
-        setProfile(data);
-      } catch {
-        console.error("Failed to fetch profile");
-      }
-    }
-
-    fetchProfile();
-  }, [sender]);
-
   return (
     <div
       className={cn(
@@ -53,10 +32,10 @@ function Bubble({
         variant === "sent" && "justify-end",
       )}
     >
-      {profile && (
+      {sender && (
         <Avatar>
-          <AvatarImage src={profile.image} alt={profile.username} />
-          <AvatarFallback>{profile.username.slice(0, 2)}</AvatarFallback>
+          <AvatarImage src={sender.image} alt={sender.username} />
+          <AvatarFallback>{sender.username.slice(0, 2)}</AvatarFallback>
         </Avatar>
       )}
       {variant === "sent" && (

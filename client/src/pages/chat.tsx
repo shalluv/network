@@ -50,7 +50,7 @@ export function Chat() {
         <h2 className="text-lg font-semibold">{othername}</h2>
       </header>
       <div className="flex w-full flex-col gap-2 p-4">
-        <Bubble createdAt={new Date()} sender={othername} variant="received">
+        <Bubble createdAt={new Date()} sender={other} variant="received">
           Hi
         </Bubble>
         <Bubble createdAt={new Date()} variant="sent">
