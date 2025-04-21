@@ -5,16 +5,21 @@ import {
   FormField,
   FormItem,
   FormLabel,
-} from "./components/ui/form";
+} from "../components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { env } from "./env";
-import { Button } from "./components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "./components/ui/card";
-import { Input } from "./components/ui/input";
+import { env } from "../env";
+import { Button } from "../components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
+import { Input } from "../components/ui/input";
 import { useNavigate } from "react-router";
-import { useUser } from "./hooks/use-user";
+import { useUser } from "../hooks/use-user";
 import React from "react";
 
 const loginSchema = z.object({

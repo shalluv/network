@@ -1,11 +1,15 @@
 import React from "react";
 import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { useNavigate, useParams } from "react-router";
+import { cn } from "@/lib/utils";
 
 function ChatBox({ username, image }: { username: string; image: string }) {
   const [lastMessage, setLastMessage] = useState("");
   const [lastMessageTime, setLastMessageTime] = useState("");
   const read = false;
+  const navigate = useNavigate();
+  const { othername } = useParams();
 
   React.useEffect(() => {
     async function fetchLastMessage() {
@@ -17,7 +21,17 @@ function ChatBox({ username, image }: { username: string; image: string }) {
   }, []);
 
   return (
-    <div className="flex w-full items-center justify-between px-4 py-2 hover:bg-gray-100">
+    <div
+      className={cn(
+        "flex w-full items-center justify-between px-4 py-2",
+        othername === username
+          ? "bg-neutral-200"
+          : "bg-white hover:bg-neutral-100",
+      )}
+      onClick={() => {
+        navigate(`/${username}`);
+      }}
+    >
       <div className="flex items-center gap-3">
         <div className="h-14 w-14 flex-shrink-0 overflow-hidden rounded-full bg-gray-500">
           <Avatar className="h-14 w-14">
