@@ -9,15 +9,17 @@ import { UserProvider } from "./providers/user-provider";
 import { Login } from "./pages/login";
 import HomeLayout from "./pages/layout";
 import { Chat } from "./pages/chat";
+import { GroupChat } from "./pages/groupchat";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <UserProvider>
       <BrowserRouter>
         <Routes>
-          <Route element={<HomeLayout />}>
+          <Route path="/" element={<HomeLayout />}>
             <Route index element={<Home />} />
             <Route path="/:othername" element={<Chat />} />
+            <Route path="/group/:groupid" element={<GroupChat />} />
           </Route>
           <Route path="login" element={<Login />} />
         </Routes>
