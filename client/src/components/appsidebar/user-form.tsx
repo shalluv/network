@@ -35,6 +35,8 @@ export function UserForm() {
   const { user, loading, reload } = useUser();
   const username = user?.username;
 
+  const [open, setOpen] = React.useState(false);
+
   const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -71,13 +73,14 @@ export function UserForm() {
       if (!res.ok) throw new Error("Failed to edit profile");
       toast.success("Profile updated successfully");
       reload();
+      setOpen(false);
     } catch (error) {
       console.error(error);
     }
   };
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="ghost" disabled={loading || !username}>
           <Avatar>
