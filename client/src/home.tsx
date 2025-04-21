@@ -1,8 +1,18 @@
 import { Bubble } from "./components/ui/bubble";
 import { AppSidebar } from "./components/appsidebar/app-sidebar";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import React from "react";
+import { useNavigate } from "react-router";
 
 const Home = () => {
+  const navigate = useNavigate();
+
+  React.useEffect(() => {
+    if (!localStorage.getItem("username")) {
+      navigate("/login");
+    }
+  }, [navigate]);
+
   return (
     <div>
       <SidebarProvider>

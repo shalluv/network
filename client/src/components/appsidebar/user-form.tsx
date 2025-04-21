@@ -20,29 +20,46 @@ import { Button } from "@/components/ui/button";
 import { env } from "@/env";
 import { cn } from "@/lib/utils";
 import { useForm } from "react-hook-form";
-
-interface UserFormProps {
-  username: string;
-}
+import React from "react";
+import { toast } from "sonner";
+import { useUser } from "@/hooks/use-user";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
 const formSchema = z.object({
-  username: z.string().min(1, "Username is required"),
-  image: z.string(),
+  image: z.string().min(1, "Image is required"),
 });
 
 type FormSchema = z.infer<typeof formSchema>;
 
-export function UserForm({ username }: UserFormProps) {
+export function UserForm() {
+  const { user, loading, reload } = useUser();
+  const username = user?.username;
+
   const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      username: "",
       image: "",
     },
   });
 
+  React.useEffect(() => {
+    async function fetchProfile() {
+      if (!username) return;
+      try {
+        const res = await fetch(`${env.VITE_API_URL}/profiles/${username}`);
+        if (!res.ok) throw Error;
+        const data = await res.json();
+        form.setValue("image", data.image);
+      } catch {
+        console.error("Failed to fetch profile");
+      }
+    }
+
+    fetchProfile();
+  }, [username, form]);
+
   const onSubmit = async (data: FormSchema) => {
-    const { username, image } = data;
+    const { image } = data;
     try {
       const res = await fetch(`${env.VITE_API_URL}/profiles`, {
         method: "POST",
@@ -51,9 +68,9 @@ export function UserForm({ username }: UserFormProps) {
         },
         body: JSON.stringify({ username, image }),
       });
-      if (!res.ok) throw new Error("Failed to create profile");
-      const result = await res.json();
-      console.log(result);
+      if (!res.ok) throw new Error("Failed to edit profile");
+      toast.success("Profile updated successfully");
+      reload();
     } catch (error) {
       console.error(error);
     }
@@ -62,7 +79,11 @@ export function UserForm({ username }: UserFormProps) {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="ghost">
+        <Button variant="ghost" disabled={loading || !username}>
+          <Avatar>
+            <AvatarImage src={user?.image} alt={user?.username} />
+            <AvatarFallback>{user?.username.slice(0, 2)}</AvatarFallback>
+          </Avatar>
           {username} <ChevronDown />
         </Button>
       </DialogTrigger>
@@ -83,7 +104,7 @@ export function UserForm({ username }: UserFormProps) {
                   <FormLabel>
                     <div
                       className={cn(
-                        "relative flex aspect-square size-16 cursor-pointer items-center justify-center overflow-hidden rounded-full text-center",
+                        "relative flex aspect-square size-32 cursor-pointer items-center justify-center overflow-hidden rounded-full text-center",
                         !field.value && "border-2 border-dashed",
                       )}
                     >
@@ -123,19 +144,10 @@ export function UserForm({ username }: UserFormProps) {
                 </FormItem>
               )}
             />
-            <FormField
-              name="username"
-              control={form.control}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Username</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter your username" {...field} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-
+            <FormItem className="w-full">
+              <FormLabel>Username</FormLabel>
+              <Input value={username} disabled />
+            </FormItem>
             <Button type="submit">Submit</Button>
           </form>
         </Form>

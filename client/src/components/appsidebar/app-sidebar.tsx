@@ -15,7 +15,6 @@ function AppSidebar() {
     async function fetchUsers() {
       try {
         const res = await fetch(`${env.VITE_API_URL}/profiles`);
-        console.log(res);
         if (!res.ok) throw Error;
         const data = await res.json();
         setUsers(data);
@@ -30,7 +29,7 @@ function AppSidebar() {
   return (
     <Sidebar>
       <div className="mt-8 flex w-full justify-between px-4 text-2xl">
-        <UserForm username="Admin" />
+        <UserForm />
         <button className="">
           <SquarePen className="w-6" />
         </button>
