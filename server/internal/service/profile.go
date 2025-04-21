@@ -4,10 +4,14 @@ import "github.com/shalluv/network/server/internal/domain"
 
 type Profile struct {
 	profileRepo domain.ProfileRepository
+	groupRepo   domain.GroupRepository
 }
 
-func NewProfile(profileRepo domain.ProfileRepository) *Profile {
-	return &Profile{profileRepo}
+func NewProfile(profileRepo domain.ProfileRepository, groupRepo domain.GroupRepository) *Profile {
+	return &Profile{
+		profileRepo,
+		groupRepo,
+	}
 }
 
 func (p *Profile) UploadProfile(username string, image string) error {
@@ -28,4 +32,8 @@ func (p *Profile) GetUserProfile(username string) (*domain.Profile, error) {
 
 func (p *Profile) GetAllUserProfiles() ([]*domain.Profile, error) {
 	return p.profileRepo.FindAll()
+}
+
+func (g *Profile) GetUserGroups(username string) ([]*domain.Group, error) {
+	return g.groupRepo.FindGroupsByUsername(username)
 }

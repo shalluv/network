@@ -7,12 +7,12 @@ import (
 	"github.com/shalluv/network/server/internal/service"
 )
 
-type profileHandler struct {
+type profile struct {
 	profileService *service.Profile
 }
 
-func NewProfileHandler(profileService *service.Profile) *profileHandler {
-	return &profileHandler{profileService}
+func NewProfile(profileService *service.Profile) *profile {
+	return &profile{profileService}
 }
 
 type UploadProfileInput struct {
@@ -29,7 +29,7 @@ type UploadProfileInput struct {
 //	@Param			request	body	UploadProfileInput	true	"request"
 //	@Success		204
 //	@Router			/profiles [post]
-func (p *profileHandler) UploadProfile(c *gin.Context) {
+func (p *profile) UploadProfile(c *gin.Context) {
 	input := &UploadProfileInput{}
 
 	if err := c.ShouldBindJSON(input); err != nil {
@@ -55,7 +55,7 @@ func (p *profileHandler) UploadProfile(c *gin.Context) {
 //	@Success		200			{object}	domain.Profile
 //	@Failure		404			{object}	errorResponse
 //	@Router			/profiles/{username} [get]
-func (p *profileHandler) GetProfile(c *gin.Context) {
+func (p *profile) GetProfile(c *gin.Context) {
 	username := c.Param("username")
 
 	profile, err := p.profileService.GetUserProfile(username)
@@ -73,15 +73,35 @@ func (p *profileHandler) GetProfile(c *gin.Context) {
 //	@Description	retrieve all user profiles in the system
 //	@Tags			profiles
 //	@Produce		json
-//	@Success		200	{array}		domain.Profile
-//	@Failure		500	{object}	errorResponse
+//	@Success		200	{array}	domain.Profile
 //	@Router			/profiles [get]
-func (h *profileHandler) GetAllProfiles(c *gin.Context) {
-	profiles, err := h.profileService.GetAllUserProfiles()
+func (p *profile) GetAllProfiles(c *gin.Context) {
+	profiles, err := p.profileService.GetAllUserProfiles()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, &errorResponse{Error: err.Error()})
 		return
 	}
 
 	c.JSON(http.StatusOK, profiles)
+}
+
+// GetUserGroups godoc
+//
+//	@Summary		get all groups of user
+//	@Description	retrieve all groups of user
+//	@Tags			profiles
+//	@Param			username	path	string	true	"username"
+//	@Produce		json
+//	@Success		200	{array}	domain.Group
+//	@Router			/profiles/{username}/groups [get]
+func (p *profile) GetUserGroups(c *gin.Context) {
+	username := c.Param("username")
+
+	groups, err := p.profileService.GetUserGroups(username)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, &errorResponse{Error: err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, groups)
 }
