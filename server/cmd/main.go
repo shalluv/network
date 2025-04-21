@@ -42,6 +42,7 @@ func main() {
 
 	r.POST("/profiles", profileHandler.UploadProfile)
 	r.GET("/profiles/:username", profileHandler.GetProfile)
+	r.GET("/profiles/", profileHandler.GetAllProfiles)
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	r.Run(fmt.Sprintf(":%d", config.Port))

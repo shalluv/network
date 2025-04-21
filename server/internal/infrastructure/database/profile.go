@@ -22,6 +22,14 @@ func (p *profile) FindOneByUsername(username string) (*domain.Profile, error) {
 	return profile, nil
 }
 
+func (p *profile) FindAll() ([]*domain.Profile, error) {
+	var profiles []*domain.Profile
+	if err := p.Find(&profiles).Error; err != nil {
+		return nil, err
+	}
+	return profiles, nil
+}
+
 func (p *profile) CreateProfile(profile *domain.Profile) error {
 	return p.Create(profile).Error
 }
