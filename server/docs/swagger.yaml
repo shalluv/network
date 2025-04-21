@@ -1,8 +1,27 @@
 definitions:
+  domain.Group:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+    type: object
   domain.Profile:
     properties:
       image:
         type: string
+      username:
+        type: string
+    type: object
+  rest.CreateGroupInput:
+    properties:
+      name:
+        type: string
+      username:
+        type: string
+    type: object
+  rest.JoinGroupInput:
+    properties:
       username:
         type: string
     type: object
@@ -25,6 +44,106 @@ info:
   title: Server
   version: "1.0"
 paths:
+  /groups:
+    get:
+      description: retrieve all groups
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.Group'
+            type: array
+      summary: get all groups
+      tags:
+      - groups
+    post:
+      consumes:
+      - application/json
+      description: create group chat
+      parameters:
+      - description: request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/rest.CreateGroupInput'
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/domain.Group'
+      summary: create group chat
+      tags:
+      - groups
+  /groups/{group_id}:
+    post:
+      description: join a group
+      parameters:
+      - description: group_id
+        in: path
+        name: group_id
+        required: true
+        type: string
+      - description: request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/rest.JoinGroupInput'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+      summary: join group
+      tags:
+      - groups
+  /groups/{group_id}/members:
+    get:
+      description: retrieve members in group
+      parameters:
+      - description: group_id
+        in: path
+        name: group_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.Profile'
+            type: array
+      summary: get members in group
+      tags:
+      - groups
+  /groups/{group_id}/members/{username}:
+    delete:
+      description: leave a group
+      parameters:
+      - description: group_id
+        in: path
+        name: group_id
+        required: true
+        type: string
+      - description: username
+        in: path
+        name: username
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+      summary: leave group
+      tags:
+      - groups
   /profiles:
     get:
       description: retrieve all user profiles in the system
@@ -37,10 +156,6 @@ paths:
             items:
               $ref: '#/definitions/domain.Profile'
             type: array
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/rest.errorResponse'
       summary: get all user profiles
       tags:
       - profiles
@@ -82,6 +197,27 @@ paths:
           schema:
             $ref: '#/definitions/rest.errorResponse'
       summary: get user profile
+      tags:
+      - profiles
+  /profiles/{username}/groups:
+    get:
+      description: retrieve all groups of user
+      parameters:
+      - description: username
+        in: path
+        name: username
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.Group'
+            type: array
+      summary: get all groups of user
       tags:
       - profiles
 swagger: "2.0"

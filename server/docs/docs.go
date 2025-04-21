@@ -15,6 +15,158 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/groups": {
+            "get": {
+                "description": "retrieve all groups",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "groups"
+                ],
+                "summary": "get all groups",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/domain.Group"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "create group chat",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "groups"
+                ],
+                "summary": "create group chat",
+                "parameters": [
+                    {
+                        "description": "request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/rest.CreateGroupInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/domain.Group"
+                        }
+                    }
+                }
+            }
+        },
+        "/groups/{group_id}": {
+            "post": {
+                "description": "join a group",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "groups"
+                ],
+                "summary": "join group",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "group_id",
+                        "name": "group_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/rest.JoinGroupInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        },
+        "/groups/{group_id}/members": {
+            "get": {
+                "description": "retrieve members in group",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "groups"
+                ],
+                "summary": "get members in group",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "group_id",
+                        "name": "group_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/domain.Profile"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/groups/{group_id}/members/{username}": {
+            "delete": {
+                "description": "leave a group",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "groups"
+                ],
+                "summary": "leave group",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "group_id",
+                        "name": "group_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "username",
+                        "name": "username",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        },
         "/profiles": {
             "get": {
                 "description": "retrieve all user profiles in the system",
@@ -33,12 +185,6 @@ const docTemplate = `{
                             "items": {
                                 "$ref": "#/definitions/domain.Profile"
                             }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/rest.errorResponse"
                         }
                     }
                 }
@@ -104,15 +250,77 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/profiles/{username}/groups": {
+            "get": {
+                "description": "retrieve all groups of user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "profiles"
+                ],
+                "summary": "get all groups of user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "username",
+                        "name": "username",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/domain.Group"
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "domain.Group": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
         "domain.Profile": {
             "type": "object",
             "properties": {
                 "image": {
                     "type": "string"
                 },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "rest.CreateGroupInput": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "rest.JoinGroupInput": {
+            "type": "object",
+            "properties": {
                 "username": {
                     "type": "string"
                 }

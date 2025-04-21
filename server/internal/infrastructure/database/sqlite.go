@@ -11,7 +11,7 @@ func NewSqlite(filename string) (*gorm.DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := db.AutoMigrate(&domain.Profile{}); err != nil {
+	if err := db.AutoMigrate(&domain.Profile{}, &domain.Group{}, &domain.GroupMember{}, &domain.Chat{}); err != nil {
 		return nil, err
 	}
 	return db, nil
