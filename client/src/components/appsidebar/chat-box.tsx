@@ -2,6 +2,7 @@ import { env } from "@/env";
 import { User } from "@/types/user";
 import React from "react";
 import { useState } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
 function ChatBox({ username }: { username: string }) {
   const [profile, setProfile] = useState<User>();
@@ -37,14 +38,11 @@ function ChatBox({ username }: { username: string }) {
   return (
     <div className="flex w-full items-center justify-between px-4 py-2 hover:bg-gray-100">
       <div className="flex items-center gap-3">
-        <div className="h-14 w-14 flex-shrink-0 overflow-hidden rounded-full bg-gray-500 shadow-sm">
-          {profile && (
-            <img
-              src={profile.image}
-              alt="profile"
-              className="h-full w-full object-cover"
-            />
-          )}
+        <div className="h-14 w-14 flex-shrink-0 overflow-hidden rounded-full bg-gray-500">
+          <Avatar className="h-14 w-14">
+            <AvatarImage src={profile?.image} alt={profile?.username} />
+            <AvatarFallback>{profile?.username.slice(0, 2)}</AvatarFallback>
+          </Avatar>
         </div>
 
         <div className="flex flex-col justify-center gap-1 overflow-hidden">
