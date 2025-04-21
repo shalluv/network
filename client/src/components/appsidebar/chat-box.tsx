@@ -26,7 +26,7 @@ function ChatBox({ username, image }: { username: string; image: string }) {
         "flex w-full items-center justify-between px-4 py-2",
         othername === username
           ? "bg-neutral-200"
-          : "bg-white hover:bg-neutral-100",
+          : "bg-transparent hover:bg-neutral-100",
       )}
       onClick={() => {
         navigate(`/${username}`);

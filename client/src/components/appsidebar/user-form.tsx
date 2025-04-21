@@ -82,12 +82,16 @@ export function UserForm() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" disabled={loading || !username}>
+        <Button
+          variant="ghost"
+          disabled={loading || !username}
+          className="flex items-center"
+        >
           <Avatar>
             <AvatarImage src={user?.image} alt={user?.username} />
             <AvatarFallback>{user?.username.slice(0, 2)}</AvatarFallback>
           </Avatar>
-          {username} <ChevronDown />
+          <p className="text-xl">{username}</p> <ChevronDown />
         </Button>
       </DialogTrigger>
       <DialogContent>
