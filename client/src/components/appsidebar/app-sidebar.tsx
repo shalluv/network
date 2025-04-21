@@ -2,9 +2,29 @@ import { Sidebar, SidebarContent } from "@/components/ui/sidebar";
 import { SquarePen } from "lucide-react";
 import { useState } from "react";
 import { ChatBox } from "./chat-box";
+import { User } from "@/types/user";
+import React from "react";
+import { env } from "@/env";
 
 function AppSidebar() {
   const [selected, setSelected] = useState<"messages" | "groups">("messages");
+  const [users, setUsers] = useState<User[]>([]);
+
+  React.useEffect(() => {
+    async function fetchUsers() {
+      try {
+        const res = await fetch(`${env.VITE_API_URL}/profiles`);
+        console.log(res);
+        if (!res.ok) throw Error;
+        const data = await res.json();
+        setUsers(data);
+      } catch {
+        console.error("Failed to fetch all user profiles");
+      }
+    }
+
+    fetchUsers();
+  }, []);
 
   return (
     <Sidebar>
@@ -36,9 +56,8 @@ function AppSidebar() {
         <div className="mb-6">
           {selected === "messages" ? (
             <div className="flex flex-col">
-              {/* Static */}
-              {Array.from({ length: 100 }, (_, i) => (
-                <ChatBox key={i} username={"admin911"} />
+              {users.map((user, i) => (
+                <ChatBox key={i} username={user.username} />
               ))}
             </div>
           ) : (
