@@ -1,30 +1,11 @@
-import { env } from "@/env";
-import { User } from "@/types/user";
 import React from "react";
 import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
-function ChatBox({ username }: { username: string }) {
-  const [profile, setProfile] = useState<User>();
+function ChatBox({ username, image }: { username: string; image: string }) {
   const [lastMessage, setLastMessage] = useState("");
   const [lastMessageTime, setLastMessageTime] = useState("");
   const read = false;
-
-  React.useEffect(() => {
-    async function fetchProfile() {
-      if (!username) return;
-      try {
-        const res = await fetch(`${env.VITE_API_URL}/profiles/${username}`);
-        if (!res.ok) throw Error;
-        const data = await res.json();
-        setProfile(data);
-      } catch {
-        console.error("Failed to fetch profile");
-      }
-    }
-
-    fetchProfile();
-  }, [username]);
 
   React.useEffect(() => {
     async function fetchLastMessage() {
@@ -33,15 +14,15 @@ function ChatBox({ username }: { username: string }) {
     }
 
     fetchLastMessage();
-  }, [profile]);
+  }, []);
 
   return (
     <div className="flex w-full items-center justify-between px-4 py-2 hover:bg-gray-100">
       <div className="flex items-center gap-3">
         <div className="h-14 w-14 flex-shrink-0 overflow-hidden rounded-full bg-gray-500">
           <Avatar className="h-14 w-14">
-            <AvatarImage src={profile?.image} alt={profile?.username} />
-            <AvatarFallback>{profile?.username.slice(0, 2)}</AvatarFallback>
+            <AvatarImage src={image} alt={username} />
+            <AvatarFallback>{username.slice(0, 2)}</AvatarFallback>
           </Avatar>
         </div>
 
