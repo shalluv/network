@@ -6,10 +6,12 @@ import { User } from "@/types/user";
 import React from "react";
 import { env } from "@/env";
 import { UserForm } from "./user-form";
+import { useUser } from "@/hooks/use-user";
 
 function AppSidebar() {
   const [selected, setSelected] = useState<"messages" | "groups">("messages");
   const [users, setUsers] = useState<User[]>([]);
+  const { user } = useUser();
 
   React.useEffect(() => {
     async function fetchUsers() {
@@ -56,9 +58,12 @@ function AppSidebar() {
         <div className="mb-6">
           {selected === "messages" ? (
             <div className="flex flex-col">
-              {users.map((user, i) => (
-                <ChatBox key={i} username={user.username} />
-              ))}
+              {users.map(
+                (userProfile, i) =>
+                  user?.username != userProfile.username && (
+                    <ChatBox key={i} username={userProfile.username} />
+                  ),
+              )}
             </div>
           ) : (
             <div>y</div>
