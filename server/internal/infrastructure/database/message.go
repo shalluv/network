@@ -28,7 +28,7 @@ func (m *message) FindOneMessageById(id uuid.UUID) (*domain.Message, error) {
 
 func (m *message) FindGroupMessages(groupId uuid.UUID) ([]*domain.Message, error) {
 	messages := []*domain.Message{}
-	if err := m.Find(&messages, "to = ? AND to_group = true", groupId).Error; err != nil {
+	if err := m.Find(&messages, "to = ? AND to_group = true", groupId).Order("created_AT ASC").Error; err != nil {
 		return nil, err
 	}
 	return messages, nil
@@ -36,7 +36,10 @@ func (m *message) FindGroupMessages(groupId uuid.UUID) ([]*domain.Message, error
 
 func (m *message) FindPrivateMessages(userA string, userB string) ([]*domain.Message, error) {
 	messages := []*domain.Message{}
-	if err := m.Find(&messages, `(("from" = ? AND "to" = ?) OR ("from" = ? AND "to" = ?)) AND to_group = false`, userA, userB, userB, userA).Error; err != nil {
+	if err := m.
+		Find(&messages, `(("from" = ? AND "to" = ?) OR ("from" = ? AND "to" = ?)) AND to_group = false`, userA, userB, userB, userA).
+		Order("created_at ASC").
+		Error; err != nil {
 		return nil, err
 	}
 	return messages, nil

@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -24,6 +25,8 @@ import (
 
 // @host	localhost:8080
 func main() {
+	time.Local = time.UTC
+
 	config, err := config.Load()
 	if err != nil {
 		log.Fatal(err)

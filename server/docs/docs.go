@@ -433,6 +433,9 @@ const docTemplate = `{
                 "content": {
                     "type": "string"
                 },
+                "created_at": {
+                    "type": "string"
+                },
                 "from": {
                     "type": "string"
                 },
