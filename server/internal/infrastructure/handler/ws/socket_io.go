@@ -37,10 +37,13 @@ func (s *socketIo) OnConnect(conn socketio.Conn) error {
 	}
 	usernames, ok := queryParams["username"]
 	if !ok || len(usernames) != 1 {
+		log.Printf("unauthorized: %s", conn.URL().RawQuery)
 		return errors.New("unauthorized")
 	}
 
 	username := usernames[0]
+
+	log.Printf("user %s is connecting", username)
 
 	groups, err := s.profileService.GetUserGroups(username)
 	if err != nil {
@@ -69,6 +72,8 @@ func (s *socketIo) OnConnect(conn socketio.Conn) error {
 	s.mu.Unlock()
 
 	conn.Emit(UsersEvent, onlineUsers)
+
+	log.Printf("user %s connected successfully", username)
 
 	return nil
 }
@@ -126,8 +131,13 @@ func (s *socketIo) SendGroupMessage(conn socketio.Conn, msg string) {
 }
 
 func (s *socketIo) OnDisconnect(conn socketio.Conn, reason string) {
-	username := conn.Context().(string)
+	defer conn.Close()
+
+	username, ok := conn.Context().(string)
 	log.Printf("conn %s disconnecting: %s", conn.ID(), reason)
+	if !ok {
+		return
+	}
 
 	s.mu.Lock()
 	idx := -1
@@ -152,8 +162,6 @@ func (s *socketIo) OnDisconnect(conn socketio.Conn, reason string) {
 		s.server.BroadcastToNamespace(DefaultNamespace, UserDisconnectedEvent, &msg)
 	}
 	s.mu.Unlock()
-
-	conn.Close()
 }
 
 func (s *socketIo) OnError(conn socketio.Conn, err error) {
