@@ -52,7 +52,6 @@ func (s *socketIo) OnConnect(clients ...any) {
 	for _, group := range groups {
 		//s.server.JoinRoom(DefaultNamespace, group.Id.String(), conn)
 		conn.Join(socketio.Room(group.Id.String()))
-		s.server.To()
 	}
 
 	conn.SetData(username)
@@ -93,7 +92,7 @@ func (s *socketIo) OnConnect(clients ...any) {
 		}
 
 		arg := args[0].(string)
-		s.SendPrivateMessage(conn, arg)
+		s.SendGroupMessage(conn, arg)
 	})
 
 	conn.On("disconnect", func(...any) {
@@ -160,7 +159,7 @@ func (s *socketIo) OnDisconnect(conn *socketio.Socket, reason string) {
 	if !ok {
 		return
 	}
-	log.Printf("conn %s disconnecting: %s", conn.Id(), reason)
+	log.Printf("conn %s user %s disconnecting: %s", conn.Id(), username, reason)
 	//s.server.JoinRoom(DefaultNamespace, username, conn)
 	defer conn.Leave(socketio.Room(username))
 
