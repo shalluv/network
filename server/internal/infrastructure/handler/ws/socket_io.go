@@ -61,7 +61,7 @@ func (s *socketIo) OnConnect(clients ...any) {
 	if len(s.userConns[username]) == 0 {
 		msg := UserConnectedEventMsg{Username: username}
 		//s.server.BroadcastToNamespace(DefaultNamespace, "user connected", &msg)
-		s.server.To(socketio.Room(DefaultNamespace)).Emit("user connected", &msg)
+		s.server.Emit("user connected", &msg)
 	}
 	for user := range s.userConns {
 		if user != username {
@@ -189,7 +189,7 @@ func (s *socketIo) OnDisconnect(conn *socketio.Socket, reason string) {
 	if connsLen-1 == 0 {
 		msg := UserDisconnectedEventMsg{Username: username}
 		// s.server.BroadcastToNamespace(DefaultNamespace, UserDisconnectedEvent, &msg)
-		s.server.Emit(GroupMessageEvent, &msg)
+		s.server.Emit(UserDisconnectedEvent, &msg)
 	}
 	s.mu.Unlock()
 }
