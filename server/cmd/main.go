@@ -6,12 +6,12 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	socketio "github.com/googollee/go-socket.io"
 	"github.com/shalluv/network/server/internal/config"
 	"github.com/shalluv/network/server/internal/infrastructure/database"
 	"github.com/shalluv/network/server/internal/infrastructure/handler/rest"
 	"github.com/shalluv/network/server/internal/infrastructure/handler/ws"
 	"github.com/shalluv/network/server/internal/service"
+	socketio "github.com/zishang520/socket.io/v2/socket"
 
 	_ "github.com/shalluv/network/server/docs"
 	swaggerFiles "github.com/swaggo/files"
@@ -42,7 +42,7 @@ func main() {
 	messageService := service.NewMessage(messageDB)
 	groupService := service.NewGroup(groupDB, messageDB)
 
-	socketIoServer := socketio.NewServer(nil)
+	socketIoServer := socketio.NewServer(nil, nil)
 	socketIoHandler := ws.NewSocketIo(socketIoServer, profileService, messageService)
 	groupService.SetEventPublisher(socketIoHandler)
 	messageService.SetEventPublisher(socketIoHandler)

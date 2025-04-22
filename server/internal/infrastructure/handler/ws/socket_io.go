@@ -8,14 +8,14 @@ import (
 	"sync"
 
 	"github.com/google/uuid"
-	socketio "github.com/googollee/go-socket.io"
 	"github.com/shalluv/network/server/internal/domain"
 	"github.com/shalluv/network/server/internal/service"
+	socketio "github.com/zishang520/socket.io/v2/socket"
 )
 
 type socketIo struct {
 	mu             sync.Mutex
-	userConns      map[string][]socketio.Conn
+	userConns      map[string][]*socketio.Socket
 	server         *socketio.Server
 	profileService *service.Profile
 	messageService *service.Message
@@ -26,19 +26,19 @@ func NewSocketIo(server *socketio.Server, profileService *service.Profile, messa
 		server:         server,
 		profileService: profileService,
 		messageService: messageService,
-		userConns:      map[string][]socketio.Conn{},
+		userConns:      map[string][]*socketio.Socket{},
 	}
 }
 
-func (s *socketIo) OnConnect(conn socketio.Conn) error {
-	queryParams, err := url.ParseQuery(conn.URL().RawQuery)
+func (s *socketIo) OnConnect(conn *socketio.Socket) error {
+	queryParams, err := url.ParseQuery(conn.Handshake().Url)
 	if err != nil {
 		log.Printf("on connect err: %v", err)
 		return err
 	}
 	usernames, ok := queryParams["username"]
 	if !ok || len(usernames) != 1 {
-		log.Printf("unauthorized: %s", conn.URL().RawQuery)
+		log.Printf("unauthorized: %s", conn.Handshake().Url)
 		return errors.New("unauthorized")
 	}
 
@@ -51,18 +51,22 @@ func (s *socketIo) OnConnect(conn socketio.Conn) error {
 		return err
 	}
 
-	s.server.JoinRoom(DefaultNamespace, username, conn)
+	//s.server.JoinRoom(DefaultNamespace, username, conn)
+	conn.Join(socketio.Room(username))
 	for _, group := range groups {
-		s.server.JoinRoom(DefaultNamespace, group.Id.String(), conn)
+		//s.server.JoinRoom(DefaultNamespace, group.Id.String(), conn)
+		conn.Join(socketio.Room(group.Id.String()))
+		s.server.To()
 	}
 
-	conn.SetContext(username)
+	conn.SetData(username)
 	onlineUsers := []string{}
 
 	s.mu.Lock()
 	if len(s.userConns[username]) == 0 {
 		msg := UserConnectedEventMsg{Username: username}
-		s.server.BroadcastToNamespace(DefaultNamespace, "user connected", &msg)
+		//s.server.BroadcastToNamespace(DefaultNamespace, "user connected", &msg)
+		s.server.To(socketio.Room(DefaultNamespace)).Emit("user connected", &msg)
 	}
 	for user := range s.userConns {
 		if user != username {
@@ -84,7 +88,7 @@ type MessageInput struct {
 	Content string `json:"content"`
 }
 
-func (s *socketIo) SendPrivateMessage(conn socketio.Conn, msg string) {
+func (s *socketIo) SendPrivateMessage(conn *socketio.Socket, msg string) {
 	input := &MessageInput{}
 	err := json.Unmarshal([]byte(msg), input)
 	if err != nil {
@@ -92,7 +96,7 @@ func (s *socketIo) SendPrivateMessage(conn socketio.Conn, msg string) {
 		return
 	}
 
-	username := conn.Context().(string)
+	username := conn.Data().(string)
 
 	if _, err := s.messageService.CreateMessage(username, input.To, input.Content, false); err != nil {
 		log.Printf("failed to send message: %v", err)
@@ -104,10 +108,11 @@ func (s *socketIo) SendPrivateMessage(conn socketio.Conn, msg string) {
 		Content: input.Content,
 	}
 
-	s.server.BroadcastToRoom(DefaultNamespace, input.To, PrivateMessageEvent, eventMsg)
+	//s.server.BroadcastToRoom(DefaultNamespace, input.To, PrivateMessageEvent, eventMsg)
+	s.server.To(socketio.Room(input.To)).Emit(PrivateMessageEvent, eventMsg)
 }
 
-func (s *socketIo) SendGroupMessage(conn socketio.Conn, msg string) {
+func (s *socketIo) SendGroupMessage(conn *socketio.Socket, msg string) {
 	input := &MessageInput{}
 	err := json.Unmarshal([]byte(msg), input)
 	if err != nil {
@@ -115,7 +120,7 @@ func (s *socketIo) SendGroupMessage(conn socketio.Conn, msg string) {
 		return
 	}
 
-	username := conn.Context().(string)
+	username := conn.Data().(string)
 
 	if _, err := s.messageService.CreateMessage(username, input.To, input.Content, true); err != nil {
 		log.Printf("failed to send message: %v", err)
@@ -128,14 +133,24 @@ func (s *socketIo) SendGroupMessage(conn socketio.Conn, msg string) {
 		Content: input.Content,
 	}
 
-	s.server.BroadcastToRoom(DefaultNamespace, input.To, GroupMessageEvent, eventMsg)
+	//s.server.BroadcastToRoom(DefaultNamespace, input.To, GroupMessageEvent, eventMsg)
+	s.server.To(socketio.Room(input.To)).Emit(GroupMessageEvent, eventMsg)
 }
 
-func (s *socketIo) OnDisconnect(conn socketio.Conn, reason string) {
-	defer conn.Close()
+func (s *socketIo) OnDisconnect(conn *socketio.Socket, reason string) {
+	queryParams, err := url.ParseQuery(conn.Handshake().Url)
+	if err != nil {
+		log.Printf("on connect err: %v", err)
+		return
+	}
+	usernames, ok := queryParams["username"]
 
-	username, ok := conn.Context().(string)
-	log.Printf("conn %s disconnecting: %s", conn.ID(), reason)
+	usernameR := usernames[0]
+	//s.server.JoinRoom(DefaultNamespace, username, conn)
+	defer conn.Leave(socketio.Room(usernameR))
+
+	username, ok := conn.Data().(string)
+	log.Printf("conn %s disconnecting: %s", conn.Id(), reason)
 	if !ok {
 		return
 	}
@@ -143,14 +158,14 @@ func (s *socketIo) OnDisconnect(conn socketio.Conn, reason string) {
 	s.mu.Lock()
 	idx := -1
 	for i, c := range s.userConns[username] {
-		if c.ID() == conn.ID() {
+		if c.Id() == conn.Id() {
 			idx = i
 			break
 		}
 	}
 
 	if idx == -1 {
-		log.Printf("conn %s not found in map", conn.ID())
+		log.Printf("conn %s not found in map", conn.Id())
 		return
 	}
 
@@ -160,25 +175,28 @@ func (s *socketIo) OnDisconnect(conn socketio.Conn, reason string) {
 
 	if connsLen-1 == 0 {
 		msg := UserDisconnectedEventMsg{Username: username}
-		s.server.BroadcastToNamespace(DefaultNamespace, UserDisconnectedEvent, &msg)
+		// s.server.BroadcastToNamespace(DefaultNamespace, UserDisconnectedEvent, &msg)
+		s.server.Emit(GroupMessageEvent, &msg)
 	}
 	s.mu.Unlock()
 }
 
-func (s *socketIo) OnError(conn socketio.Conn, err error) {
-	log.Printf("conn %s: %v", conn.ID(), err)
+func (s *socketIo) OnError(conn *socketio.Socket, err error) {
+	log.Printf("conn %s: %v", conn.Id(), err)
 }
 
 func (s *socketIo) PublishMessageDeletedEvent(message *domain.Message) {
-	namespace := DefaultNamespace
+	// namespace := DefaultNamespace
 
-	s.server.BroadcastToNamespace(namespace, MessageDeletedEvent, message)
+	// s.server.BroadcastToNamespace(namespace, MessageDeletedEvent, message)
+	s.server.Emit(MessageDeletedEvent, message)
 }
 
 func (s *socketIo) PublishMessageEdited(message *domain.Message) {
-	namespace := DefaultNamespace
+	// namespace := DefaultNamespace
 
-	s.server.BroadcastToNamespace(namespace, MessageEditedEvent, message)
+	// s.server.BroadcastToNamespace(namespace, MessageEditedEvent, message)
+	s.server.Emit(MessageDeletedEvent, message)
 }
 
 func (s *socketIo) PublishJoinedGroupEvent(username string, groupId uuid.UUID) {
@@ -186,11 +204,13 @@ func (s *socketIo) PublishJoinedGroupEvent(username string, groupId uuid.UUID) {
 		GroupId:  groupId,
 		Username: username,
 	}
-	s.server.BroadcastToRoom(DefaultNamespace, groupId.String(), JoinedGroupEvent, msg)
+	// s.server.BroadcastToRoom(DefaultNamespace, groupId.String(), JoinedGroupEvent, msg)
+	s.server.To(socketio.Room(groupId.String())).Emit(JoinedGroupEvent, msg)
 
 	s.mu.Lock()
 	for _, conn := range s.userConns[username] {
-		s.server.JoinRoom(DefaultNamespace, groupId.String(), conn)
+		// s.server.JoinRoom(DefaultNamespace, groupId.String(), conn)
+		conn.Join(socketio.Room(groupId.String()))
 	}
 	s.mu.Unlock()
 }
@@ -203,9 +223,11 @@ func (s *socketIo) PublishLeftGroupEvent(username string, groupId uuid.UUID) {
 
 	s.mu.Lock()
 	for _, conn := range s.userConns[username] {
-		s.server.LeaveRoom(DefaultNamespace, groupId.String(), conn)
+		// s.server.LeaveRoom(DefaultNamespace, groupId.String(), conn)
+		conn.Leave(socketio.Room(groupId.String()))
 	}
 	s.mu.Unlock()
 
-	s.server.BroadcastToRoom(DefaultNamespace, groupId.String(), LeftGroupEvent, msg)
+	// s.server.BroadcastToRoom(DefaultNamespace, groupId.String(), LeftGroupEvent, msg)
+	s.server.To(socketio.Room(groupId.String())).Emit(LeftGroupEvent, msg)
 }
