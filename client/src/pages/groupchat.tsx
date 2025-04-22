@@ -211,7 +211,7 @@ export function GroupChat() {
             {groupName ? groupName : usernames.join(", ")}
           </span>
         </div>
-        <GroupInfo groupid={groupid} users={users} />
+        <GroupInfo groupid={groupid} />
       </header>
 
       <div className="flex h-full w-full flex-col gap-2 overflow-y-auto p-4">

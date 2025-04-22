@@ -3,21 +3,61 @@ import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { useNavigate, useParams } from "react-router";
 import { cn } from "@/lib/utils";
+import { socket } from "@/socket";
+import { Message } from "@/types/message";
+import { env } from "@/env";
+import { useUser } from "@/hooks/use-user";
+import { format } from "date-fns";
 
-function ChatBox({ username, image }: { username: string; image: string }) {
-  const [lastMessage, setLastMessage] = useState("");
-  const [lastMessageTime, setLastMessageTime] = useState("");
-  const read = false;
+function ChatBox({
+  username,
+  image,
+  online,
+}: {
+  username: string;
+  image: string;
+  online: boolean;
+}) {
+  const [lastMessage, setLastMessage] = useState(" ");
+  const [lastMessageTime, setLastMessageTime] = useState(" ");
   const navigate = useNavigate();
   const { othername } = useParams();
+  const { user } = useUser();
 
   React.useEffect(() => {
-    async function fetchLastMessage() {
-      setLastMessage("tesetsettese4huiwueifhuiwefs");
-      setLastMessageTime("12:21");
+    const fetchMessages = async () => {
+      console.log("Fetching messages...");
+      try {
+        const res = await fetch(
+          `${env.VITE_API_URL}/${user?.username}/${username}/messages`,
+        );
+        if (!res.ok) throw Error;
+        const data = await res.json();
+        const last = data.length !== 0 ? data[data.length - 1] : null;
+        setLastMessage(last ? last.content : "No message yet");
+        setLastMessageTime(last ? format(last.created_at, "HH:mm") : " ");
+      } catch (err) {
+        console.error("Failed to fetch messages", err);
+      }
+    };
+
+    fetchMessages();
+
+    function handlePrivateMessage(msg: Message) {
+      if (
+        (msg.from === user?.username && msg.to === username) ||
+        (msg.to === user?.username && msg.from === username)
+      ) {
+        setLastMessage(msg.content);
+        setLastMessageTime(format(msg.created_at, "HH:mm"));
+      }
     }
 
-    fetchLastMessage();
+    socket.on("private message", handlePrivateMessage);
+
+    return () => {
+      socket.off("private message", handlePrivateMessage);
+    };
   }, []);
 
   return (
@@ -41,20 +81,20 @@ function ChatBox({ username, image }: { username: string; image: string }) {
         </div>
         <div className="flex flex-col justify-center gap-1 overflow-hidden">
           <span
-            className={`w-40 truncate ${read ? "font-normal" : "font-bold"}`}
+            className={`w-40 truncate ${!online ? "font-normal" : "font-bold"}`}
             title={username}
           >
             {username}
           </span>
           <div className="flex items-center gap-2 overflow-hidden">
             <span
-              className={`text-sm ${read ? "font-light text-gray-600" : "font-semibold"} max-w-48 truncate`}
+              className={`text-sm ${!online ? "font-light text-gray-600" : "font-semibold"} max-w-48 truncate`}
               title={lastMessage}
             >
               {lastMessage}
             </span>
             <span
-              className={`text-sm ${read ? "font-light text-gray-600" : "font-semibold"} flex-shrink-0 whitespace-nowrap`}
+              className={`text-sm ${!online ? "font-light text-gray-600" : "font-semibold"} flex-shrink-0 whitespace-nowrap`}
               title={lastMessageTime}
             >
               {lastMessageTime}
@@ -63,7 +103,7 @@ function ChatBox({ username, image }: { username: string; image: string }) {
         </div>
       </div>
 
-      {!read && (
+      {online && (
         <div className="h-2 w-2 flex-shrink-0 rounded-full bg-blue-500" />
       )}
     </div>

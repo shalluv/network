@@ -1,5 +1,6 @@
 import { socket } from "@/socket";
 import { useEffect, useState } from "react";
+import { MessageCirclePlus } from "lucide-react";
 
 const Home = () => {
   const [isConnected, setIsConnected] = useState(socket.connected);
@@ -29,7 +30,15 @@ const Home = () => {
     };
   }, []);
 
-  return <div>{String(isConnected)}</div>;
+  return (
+    <div className="flex h-screen w-full items-center justify-center">
+      <div className="flex flex-col items-center text-gray-600">
+        <MessageCirclePlus className="mb-4 size-40 stroke-1" />
+        <p>Your messages</p>
+        <p>Send a message to start a chat</p>
+      </div>
+    </div>
+  );
 };
 
 export default Home;

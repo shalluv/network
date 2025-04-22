@@ -9,6 +9,7 @@ import { UserForm } from "./user-form";
 import { useUser } from "@/hooks/use-user";
 import { GroupChatBox } from "./group-chat-box";
 import { GroupForm } from "./group-form";
+import { socket } from "@/socket";
 
 function AppSidebar() {
   const [selected, setSelected] = useState<"messages" | "groups">(() => {
@@ -16,6 +17,7 @@ function AppSidebar() {
     return saved === "groups" || saved === "messages" ? saved : "messages";
   });
   const [users, setUsers] = useState<User[]>([]);
+  const [onlineUsernames, setOnlineUsernames] = useState<string[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
   const { user } = useUser();
 
@@ -46,9 +48,37 @@ function AppSidebar() {
       }
     }
 
+    function handleUsers(usernames: string[]) {
+      setOnlineUsernames(usernames);
+    }
+    function handleConnected({ username }: { username: string }) {
+      setOnlineUsernames((prev) => {
+        if (!prev.includes(username)) {
+          return [...prev, username];
+        }
+        return prev;
+      });
+    }
+
+    function handleDisconnected({ username }: { username: string }) {
+      setOnlineUsernames((prev) => prev.filter((user) => user !== username));
+    }
+
     fetchUsers();
     fetchGroups();
-    console.log(groups);
+    socket.on("users", handleUsers);
+    socket.on("user connected", handleConnected);
+    socket.on("user disconnected", handleDisconnected);
+
+    const handleDisconnect = () => {
+      socket.emit("disconnect");
+    };
+
+    window.addEventListener("beforeunload", handleDisconnect);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleDisconnect);
+    };
   }, []);
 
   return (
@@ -82,12 +112,13 @@ function AppSidebar() {
           {selected === "messages" ? (
             <div className="flex flex-col">
               {users.map(
-                (userProfile, i) =>
+                (userProfile) =>
                   user?.username != userProfile.username && (
                     <ChatBox
-                      key={i}
+                      key={userProfile.username}
                       username={userProfile.username}
                       image={userProfile.image}
+                      online={onlineUsernames.includes(userProfile.username)}
                     />
                   ),
               )}
