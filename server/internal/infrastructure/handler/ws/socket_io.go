@@ -21,12 +21,24 @@ type socketIo struct {
 }
 
 func NewSocketIo(server *socketio.Server, profileService *service.Profile, messageService *service.Message) *socketIo {
-	return &socketIo{
+	socketio := &socketIo{
 		server:         server,
 		profileService: profileService,
 		messageService: messageService,
 		userConns:      map[string][]*socketio.Socket{},
 	}
+	// go func() {
+	// 	log.Printf("debug")
+	// 	for {
+	// 		time.Sleep(10 * time.Second)
+	// 		socketio.mu.Lock()
+	// 		for user, conns := range socketio.userConns {
+	// 			log.Printf("user %s has %d conns", user, len(conns))
+	// 		}
+	// 		socketio.mu.Unlock()
+	// 	}
+	// }()
+	return socketio
 }
 
 func (s *socketIo) OnConnect(clients ...any) {
@@ -63,8 +75,8 @@ func (s *socketIo) OnConnect(clients ...any) {
 		//s.server.BroadcastToNamespace(DefaultNamespace, "user connected", &msg)
 		s.server.Emit("user connected", &msg)
 	}
-	for user := range s.userConns {
-		if user != username {
+	for user, conns := range s.userConns {
+		if user != username && len(conns) > 0 {
 			onlineUsers = append(onlineUsers, user)
 		}
 	}
