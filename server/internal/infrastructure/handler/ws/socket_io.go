@@ -124,15 +124,13 @@ func (s *socketIo) SendPrivateMessage(conn *socketio.Socket, msg []byte) {
 
 	username := conn.Data().(string)
 
-	if _, err := s.messageService.CreateMessage(username, input.To, input.Content, false); err != nil {
+	message, err := s.messageService.CreateMessage(username, input.To, input.Content, false)
+	if err != nil {
 		log.Printf("failed to send message: %v", err)
 		return
 	}
 
-	eventMsg := &PrivateMessageEventMsg{
-		From:    username,
-		Content: input.Content,
-	}
+	eventMsg := PrivateMessageEventMsg{message}
 
 	//s.server.BroadcastToRoom(DefaultNamespace, input.To, PrivateMessageEvent, eventMsg)
 	s.server.To(socketio.Room(input.To)).Emit(PrivateMessageEvent, eventMsg)
@@ -149,16 +147,13 @@ func (s *socketIo) SendGroupMessage(conn *socketio.Socket, msg []byte) {
 
 	username := conn.Data().(string)
 
-	if _, err := s.messageService.CreateMessage(username, input.To, input.Content, true); err != nil {
+	message, err := s.messageService.CreateMessage(username, input.To, input.Content, true)
+	if err != nil {
 		log.Printf("failed to send message: %v", err)
 		return
 	}
 
-	eventMsg := &GroupMessageEventMsg{
-		From:    username,
-		To:      input.To,
-		Content: input.Content,
-	}
+	eventMsg := GroupMessageEventMsg{message}
 
 	//s.server.BroadcastToRoom(DefaultNamespace, input.To, GroupMessageEvent, eventMsg)
 	s.server.To(socketio.Room(input.To)).Emit(GroupMessageEvent, eventMsg)

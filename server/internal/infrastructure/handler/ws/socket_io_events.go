@@ -27,14 +27,11 @@ type UserDisconnectedEventMsg struct {
 }
 
 type PrivateMessageEventMsg struct {
-	From    string `json:"username"`
-	Content string `json:"content"`
+	*domain.Message
 }
 
 type GroupMessageEventMsg struct {
-	From    string `json:"username"`
-	To      string `json:"to"`
-	Content string `json:"content"`
+	*domain.Message
 }
 
 type MessageDeletedEventMsg struct {
