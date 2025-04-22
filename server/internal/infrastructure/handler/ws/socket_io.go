@@ -76,7 +76,7 @@ func (s *socketIo) OnConnect(clients ...any) {
 	log.Printf("user %s connected successfully", username)
 
 	conn.On(PrivateMessageEvent, func(args ...interface{}) {
-		if len(args) != 0 {
+		if len(args) != 1 {
 			log.Printf("invalid args: %v", args)
 			return
 		}
@@ -86,7 +86,7 @@ func (s *socketIo) OnConnect(clients ...any) {
 	})
 
 	conn.On(GroupMessageEvent, func(args ...interface{}) {
-		if len(args) != 0 {
+		if len(args) != 1 {
 			log.Printf("invalid args: %v", args)
 			return
 		}
