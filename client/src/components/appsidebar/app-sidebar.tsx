@@ -3,6 +3,7 @@ import { SquarePen } from "lucide-react";
 import { useState } from "react";
 import { ChatBox } from "./chat-box";
 import { User } from "@/types/user";
+import { Group } from "@/types/group";
 import React from "react";
 import { env } from "@/env";
 import { UserForm } from "./user-form";
@@ -10,24 +11,12 @@ import { useUser } from "@/hooks/use-user";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { cn } from "@/lib/utils";
 import { GroupChatBox } from "./group-chat-box";
+import { GroupForm } from "./group-form";
 
 function AppSidebar() {
   const [selected, setSelected] = useState<"messages" | "groups">("messages");
   const [users, setUsers] = useState<User[]>([]);
-  const [groups, setGroups] = useState<User[][]>([
-    [
-      { username: "admin999", image: "https://i.pravatar.cc/150?img=1" },
-      { username: "user123", image: "https://i.pravatar.cc/150?img=2" },
-    ],
-    [
-      { username: "user456", image: "https://i.pravatar.cc/150?img=3" },
-      { username: "user789", image: "https://i.pravatar.cc/150?img=4" },
-      { username: "user101", image: "https://i.pravatar.cc/150?img=5" },
-      { username: "user456", image: "https://i.pravatar.cc/150?img=3" },
-      { username: "user789", image: "https://i.pravatar.cc/150?img=4" },
-      { username: "user101", image: "https://i.pravatar.cc/150?img=5" },
-    ],
-  ]);
+  const [groups, setGroups] = useState<Group[]>([]);
   const { user } = useUser();
 
   React.useEffect(() => {
@@ -42,7 +31,20 @@ function AppSidebar() {
       }
     }
 
+    async function fetchGroups() {
+      try {
+        const res = await fetch(`${env.VITE_API_URL}/groups`);
+        if (!res.ok) throw Error;
+        const data = await res.json();
+        setGroups(data);
+      } catch {
+        console.error("Failed to fetch all groups");
+      }
+    }
+
     fetchUsers();
+    fetchGroups();
+    console.log(groups);
   }, []);
 
   return (
@@ -50,7 +52,7 @@ function AppSidebar() {
       <div className="mt-8 flex w-full justify-between px-4 text-2xl">
         <UserForm />
         <button className="">
-          <SquarePen className="w-6" />
+          <GroupForm />
         </button>
       </div>
       <div className="mt-12 mb-6 flex w-full justify-between px-4">
@@ -89,7 +91,7 @@ function AppSidebar() {
           ) : (
             <div className="flex flex-col">
               {groups.map((group, i) => (
-                <GroupChatBox key={i} group={i.toString()} users={group} />
+                <GroupChatBox key={i} group={group.id} name={group.name} />
               ))}
             </div>
           )}
