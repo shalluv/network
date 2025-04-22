@@ -62,6 +62,7 @@ func main() {
 
 	profileHandler := rest.NewProfile(profileService)
 	groupHandler := rest.NewGroup(groupService)
+	messageHandler := rest.NewMessage(messageService)
 
 	// hub := ws.NewHub()
 	// wsHandler := ws.NewHandler(hub)
@@ -80,6 +81,11 @@ func main() {
 	r.POST("/groups/:group_id", groupHandler.JoinGroup)
 	r.GET("/groups/:group_id/members", groupHandler.GetGroupMembers)
 	r.DELETE("/groups/:group_id/members/:username", groupHandler.LeaveGroup)
+	r.GET("/groups/:group_id/messages", groupHandler.GetGroupMessages)
+
+	r.PATCH("/messages/:id", messageHandler.EditMessage)
+	r.DELETE("/messages/:id", messageHandler.DeleteMessage)
+	r.GET("/:user1/:user2/messages", messageHandler.GetPrivateMessages)
 
 	r.GET("/socket.io/*any", gin.WrapH(socketIoServer))
 	r.POST("/socket.io/*any", gin.WrapH(socketIoServer))

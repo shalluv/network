@@ -160,16 +160,16 @@ func (s *socketIo) OnError(conn socketio.Conn, err error) {
 	log.Printf("conn %s: %v", conn.ID(), err)
 }
 
-func (s *socketIo) PublishMessageDeletedEvent(chat *domain.Message) {
+func (s *socketIo) PublishMessageDeletedEvent(message *domain.Message) {
 	namespace := DefaultNamespace
 
-	s.server.BroadcastToNamespace(namespace, MessageDeletedEvent, chat)
+	s.server.BroadcastToNamespace(namespace, MessageDeletedEvent, message)
 }
 
-func (s *socketIo) PublishMessageEdited(chat *domain.Message) {
+func (s *socketIo) PublishMessageEdited(message *domain.Message) {
 	namespace := DefaultNamespace
 
-	s.server.BroadcastToNamespace(namespace, MessageEditedEvent, chat)
+	s.server.BroadcastToNamespace(namespace, MessageEditedEvent, message)
 }
 
 func (s *socketIo) PublishJoinedGroupEvent(username string, groupId uuid.UUID) {

@@ -70,9 +70,6 @@ const docTemplate = `{
         "/groups/{group_id}": {
             "post": {
                 "description": "join a group",
-                "produces": [
-                    "application/json"
-                ],
                 "tags": [
                     "groups"
                 ],
@@ -137,9 +134,6 @@ const docTemplate = `{
         "/groups/{group_id}/members/{username}": {
             "delete": {
                 "description": "leave a group",
-                "produces": [
-                    "application/json"
-                ],
                 "tags": [
                     "groups"
                 ],
@@ -163,6 +157,104 @@ const docTemplate = `{
                 "responses": {
                     "204": {
                         "description": "No Content"
+                    }
+                }
+            }
+        },
+        "/groups/{group_id}/messages": {
+            "get": {
+                "description": "retrieve messages in group",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "groups"
+                ],
+                "summary": "get messages in group",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "group_id",
+                        "name": "group_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "user",
+                        "name": "user",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/domain.Message"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/messages/{id}": {
+            "delete": {
+                "description": "delete a message",
+                "tags": [
+                    "messages"
+                ],
+                "summary": "delete a message",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            },
+            "patch": {
+                "description": "edit a message",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "messages"
+                ],
+                "summary": "edit a message",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/rest.EditMessageInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/domain.Message"
+                        }
                     }
                 }
             }
@@ -282,6 +374,45 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/{user1}/{user2}/messages": {
+            "get": {
+                "description": "retrieve messages between users",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "messages"
+                ],
+                "summary": "get messages between users",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "user1",
+                        "name": "user1",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "user2",
+                        "name": "user2",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/domain.Message"
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -293,6 +424,26 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string"
+                }
+            }
+        },
+        "domain.Message": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "from": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "to": {
+                    "type": "string"
+                },
+                "to_group": {
+                    "type": "boolean"
                 }
             }
         },
@@ -314,6 +465,14 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "rest.EditMessageInput": {
+            "type": "object",
+            "properties": {
+                "content": {
                     "type": "string"
                 }
             }
