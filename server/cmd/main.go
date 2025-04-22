@@ -6,12 +6,12 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	socketio "github.com/googollee/go-socket.io"
 	"github.com/shalluv/network/server/internal/config"
 	"github.com/shalluv/network/server/internal/infrastructure/database"
 	"github.com/shalluv/network/server/internal/infrastructure/handler/rest"
 	"github.com/shalluv/network/server/internal/infrastructure/handler/ws"
 	"github.com/shalluv/network/server/internal/service"
+	socketio "github.com/zishang520/socket.io/v2/socket"
 
 	_ "github.com/shalluv/network/server/docs"
 	swaggerFiles "github.com/swaggo/files"
@@ -42,23 +42,12 @@ func main() {
 	messageService := service.NewMessage(messageDB)
 	groupService := service.NewGroup(groupDB, messageDB)
 
-	socketIoServer := socketio.NewServer(nil)
+	socketIoServer := socketio.NewServer(nil, nil)
 	socketIoHandler := ws.NewSocketIo(socketIoServer, profileService, messageService)
 	groupService.SetEventPublisher(socketIoHandler)
 	messageService.SetEventPublisher(socketIoHandler)
 
-	socketIoServer.OnConnect(ws.DefaultNamespace, socketIoHandler.OnConnect)
-	socketIoServer.OnEvent(ws.DefaultNamespace, ws.PrivateMessageEvent, socketIoHandler.SendPrivateMessage)
-	socketIoServer.OnEvent(ws.DefaultNamespace, ws.GroupMessageEvent, socketIoHandler.SendGroupMessage)
-	socketIoServer.OnDisconnect(ws.DefaultNamespace, socketIoHandler.OnDisconnect)
-	socketIoServer.OnError(ws.DefaultNamespace, socketIoHandler.OnError)
-
-	go func() {
-		if err := socketIoServer.Serve(); err != nil {
-			log.Fatalf("socketio listen error: %s\n", err)
-		}
-	}()
-	defer socketIoServer.Close()
+	socketIoServer.On("connection", socketIoHandler.OnConnect)
 
 	profileHandler := rest.NewProfile(profileService)
 	groupHandler := rest.NewGroup(groupService)
@@ -87,8 +76,8 @@ func main() {
 	r.DELETE("/messages/:id", messageHandler.DeleteMessage)
 	r.GET("/:user1/:user2/messages", messageHandler.GetPrivateMessages)
 
-	r.GET("/socket.io/*any", gin.WrapH(socketIoServer))
-	r.POST("/socket.io/*any", gin.WrapH(socketIoServer))
+	r.GET("/socket.io/*any", gin.WrapH(socketIoServer.ServeHandler(nil)))
+	r.POST("/socket.io/*any", gin.WrapH(socketIoServer.ServeHandler(nil)))
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	// r.POST("/ws/group", wsHandler.CreateGroup)
