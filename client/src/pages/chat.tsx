@@ -30,6 +30,23 @@ export function Chat() {
     fetchOther();
   }, [othername]);
 
+  React.useEffect(() => {
+    async function fetchMessages() {
+      try {
+        const res = await fetch(`${env.VITE_API_URL}/profiles/${othername}`);
+        if (!res.ok) throw Error;
+        const data = await res.json();
+        setOther(data);
+      } catch {
+        console.error("Failed to fetch profile");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchMessages();
+  }, [othername]);
+
   const onSend = async (message: string) => {
     console.log("Sending message:", message);
   };

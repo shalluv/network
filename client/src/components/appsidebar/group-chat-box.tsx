@@ -4,14 +4,16 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { useNavigate, useParams } from "react-router";
 import { cn } from "@/lib/utils";
 import { User } from "@/types/user";
+import { env } from "@/env";
 
-function GroupChatBox({ group, users }: { group: string; users: User[] }) {
+function GroupChatBox({ group, name }: { group: string; name: string }) {
   const [lastMessage, setLastMessage] = useState("");
   const [lastMessageTime, setLastMessageTime] = useState("");
   const read = false;
   const navigate = useNavigate();
   const { groupid } = useParams();
-  const usernames = users.map((user) => user.username);
+  const [users, setUsers] = useState<User[]>([]);
+  const [usernames, setUsernames] = useState<string[]>([]);
 
   React.useEffect(() => {
     async function fetchLastMessage() {
@@ -19,8 +21,25 @@ function GroupChatBox({ group, users }: { group: string; users: User[] }) {
       setLastMessageTime("12:21");
     }
 
+    async function fetchUsers() {
+      try {
+        const res = await fetch(`${env.VITE_API_URL}/groups/${group}/members`);
+        if (!res.ok) throw Error;
+        const data = await res.json();
+        setUsers(data);
+        console.log(users);
+      } catch {
+        console.error("Failed to fetch all user profiles");
+      }
+    }
+
     fetchLastMessage();
+    fetchUsers();
   }, []);
+
+  React.useEffect(() => {
+    setUsernames(users.map((user) => user.username));
+  }, [users]);
 
   return (
     <div
@@ -57,9 +76,9 @@ function GroupChatBox({ group, users }: { group: string; users: User[] }) {
         <div className="flex flex-col justify-center gap-1 overflow-hidden">
           <span
             className={`w-40 truncate ${read ? "font-normal" : "font-bold"}`}
-            title={usernames.join(", ")}
+            title={name ? name : usernames.join(", ")}
           >
-            {usernames.join(", ")}
+            {name ? name : usernames.join(", ")}
           </span>
           <div className="flex items-center gap-2 overflow-hidden">
             <span
