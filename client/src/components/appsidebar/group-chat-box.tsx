@@ -119,7 +119,9 @@ function GroupChatBox({ group, name }: { group: string; name: string }) {
                       src={userProfile.image}
                       alt={userProfile.username}
                     />
-                    <AvatarFallback>{userProfile.username}</AvatarFallback>
+                    <AvatarFallback>
+                      {userProfile.username.slice(0, 2)}
+                    </AvatarFallback>
                   </>
                 ) : (
                   <AvatarFallback />
