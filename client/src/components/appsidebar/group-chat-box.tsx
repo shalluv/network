@@ -78,7 +78,11 @@ function GroupChatBox({ group, name }: { group: string; name: string }) {
             className={`w-40 truncate ${read ? "font-normal" : "font-bold"}`}
             title={name ? name : usernames.join(", ")}
           >
-            {name ? name : usernames.join(", ")}
+            {name
+              ? name
+              : usernames.length != 0
+                ? usernames.join(", ")
+                : "Empty Group"}
           </span>
           <div className="flex items-center gap-2 overflow-hidden">
             <span
