@@ -2,14 +2,13 @@ package ws
 
 import (
 	"encoding/json"
-	"errors"
 	"log"
-	"net/url"
 	"sync"
 
 	"github.com/google/uuid"
 	"github.com/shalluv/network/server/internal/domain"
 	"github.com/shalluv/network/server/internal/service"
+	"github.com/zishang520/socket.io/v2/socket"
 	socketio "github.com/zishang520/socket.io/v2/socket"
 )
 
@@ -30,16 +29,12 @@ func NewSocketIo(server *socketio.Server, profileService *service.Profile, messa
 	}
 }
 
-func (s *socketIo) OnConnect(conn *socketio.Socket) error {
-	queryParams, err := url.ParseQuery(conn.Handshake().Url)
-	if err != nil {
-		log.Printf("on connect err: %v", err)
-		return err
-	}
-	usernames, ok := queryParams["username"]
+func (s *socketIo) OnConnect(clients ...any) {
+	conn := clients[0].(*socket.Socket)
+	usernames, ok := conn.Handshake().Query["username"]
 	if !ok || len(usernames) != 1 {
 		log.Printf("unauthorized: %s", conn.Handshake().Url)
-		return errors.New("unauthorized")
+		return
 	}
 
 	username := usernames[0]
@@ -48,7 +43,8 @@ func (s *socketIo) OnConnect(conn *socketio.Socket) error {
 
 	groups, err := s.profileService.GetUserGroups(username)
 	if err != nil {
-		return err
+		log.Printf("failed to get user groups: %v", err)
+		return
 	}
 
 	//s.server.JoinRoom(DefaultNamespace, username, conn)
@@ -80,7 +76,29 @@ func (s *socketIo) OnConnect(conn *socketio.Socket) error {
 
 	log.Printf("user %s connected successfully", username)
 
-	return nil
+	conn.On(PrivateMessageEvent, func(args ...interface{}) {
+		if len(args) != 0 {
+			log.Printf("invalid args: %v", args)
+			return
+		}
+
+		arg := args[0].(string)
+		s.SendPrivateMessage(conn, arg)
+	})
+
+	conn.On(GroupMessageEvent, func(args ...interface{}) {
+		if len(args) != 0 {
+			log.Printf("invalid args: %v", args)
+			return
+		}
+
+		arg := args[0].(string)
+		s.SendPrivateMessage(conn, arg)
+	})
+
+	conn.On("disconnect", func(...any) {
+		s.OnDisconnect(conn, "leaving")
+	})
 }
 
 type MessageInput struct {
@@ -138,22 +156,13 @@ func (s *socketIo) SendGroupMessage(conn *socketio.Socket, msg string) {
 }
 
 func (s *socketIo) OnDisconnect(conn *socketio.Socket, reason string) {
-	queryParams, err := url.ParseQuery(conn.Handshake().Url)
-	if err != nil {
-		log.Printf("on connect err: %v", err)
-		return
-	}
-	usernames, ok := queryParams["username"]
-
-	usernameR := usernames[0]
-	//s.server.JoinRoom(DefaultNamespace, username, conn)
-	defer conn.Leave(socketio.Room(usernameR))
-
 	username, ok := conn.Data().(string)
-	log.Printf("conn %s disconnecting: %s", conn.Id(), reason)
 	if !ok {
 		return
 	}
+	log.Printf("conn %s disconnecting: %s", conn.Id(), reason)
+	//s.server.JoinRoom(DefaultNamespace, username, conn)
+	defer conn.Leave(socketio.Room(username))
 
 	s.mu.Lock()
 	idx := -1

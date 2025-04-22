@@ -47,18 +47,7 @@ func main() {
 	groupService.SetEventPublisher(socketIoHandler)
 	messageService.SetEventPublisher(socketIoHandler)
 
-	socketIoServer.OnConnect(ws.DefaultNamespace, socketIoHandler.OnConnect)
-	socketIoServer.OnEvent(ws.DefaultNamespace, ws.PrivateMessageEvent, socketIoHandler.SendPrivateMessage)
-	socketIoServer.OnEvent(ws.DefaultNamespace, ws.GroupMessageEvent, socketIoHandler.SendGroupMessage)
-	socketIoServer.OnDisconnect(ws.DefaultNamespace, socketIoHandler.OnDisconnect)
-	socketIoServer.OnError(ws.DefaultNamespace, socketIoHandler.OnError)
-
-	go func() {
-		if err := socketIoServer.Serve(); err != nil {
-			log.Fatalf("socketio listen error: %s\n", err)
-		}
-	}()
-	defer socketIoServer.Close()
+	socketIoServer.On("connection", socketIoHandler.OnConnect)
 
 	profileHandler := rest.NewProfile(profileService)
 	groupHandler := rest.NewGroup(groupService)
@@ -87,8 +76,8 @@ func main() {
 	r.DELETE("/messages/:id", messageHandler.DeleteMessage)
 	r.GET("/:user1/:user2/messages", messageHandler.GetPrivateMessages)
 
-	r.GET("/socket.io/*any", gin.WrapH(socketIoServer))
-	r.POST("/socket.io/*any", gin.WrapH(socketIoServer))
+	r.GET("/socket.io/*any", gin.WrapH(socketIoServer.ServeHandler(nil)))
+	r.POST("/socket.io/*any", gin.WrapH(socketIoServer.ServeHandler(nil)))
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	// r.POST("/ws/group", wsHandler.CreateGroup)
