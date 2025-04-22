@@ -24,7 +24,6 @@ function GroupChatBox({ group, name }: { group: string; name: string }) {
         if (!res.ok) throw Error;
         const data = await res.json();
         setUsers(data);
-        console.log(users, group, data);
       } catch {
         console.error("Failed to fetch all user profiles");
       }
@@ -41,7 +40,6 @@ function GroupChatBox({ group, name }: { group: string; name: string }) {
     async function fetchLastMessage() {
       setLastMessage("tesetsettese4huiwueifhuiwefs");
       setLastMessageTime("12:21");
-      console.log(user, usernames, usernames.includes(user.username));
       setJoined(user ? !usernames.includes(user.username) : false);
     }
 
