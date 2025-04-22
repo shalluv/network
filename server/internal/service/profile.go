@@ -17,6 +17,10 @@ func NewProfile(profileRepo domain.ProfileRepository, groupRepo domain.GroupRepo
 func (p *Profile) UploadProfile(username string, image string) error {
 	profile, err := p.profileRepo.FindOneByUsername(username)
 	if err == nil {
+		// cannot remove profile :D
+		if len(image) != 0 {
+			return nil
+		}
 		profile.Image = image
 		return p.profileRepo.UpdateProfile(profile)
 	}
