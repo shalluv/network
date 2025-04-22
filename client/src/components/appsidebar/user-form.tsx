@@ -87,13 +87,14 @@ export function UserForm() {
         <Button
           variant="ghost"
           disabled={loading || !username}
-          className="flex items-center"
+          className="flex w-fit items-center"
         >
           <Avatar>
             <AvatarImage src={user?.image} alt={user?.username} />
             <AvatarFallback>{user?.username.slice(0, 2)}</AvatarFallback>
           </Avatar>
-          <p className="text-xl">{username}</p> <ChevronDown />
+          <p className="max-w-52 truncate text-xl">{username}</p>{" "}
+          <ChevronDown />
         </Button>
       </DialogTrigger>
       <DialogContent>
