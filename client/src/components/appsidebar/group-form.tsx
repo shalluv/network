@@ -58,8 +58,8 @@ export function GroupForm() {
       toast.success("Group created successfully");
       reload();
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      form.reset(); // reset form after submit
-      setOpen(false); // close dialog
+      form.reset();
+      setOpen(false);
       window.location.reload();
     } catch (error) {
       console.error(error);
