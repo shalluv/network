@@ -1,5 +1,6 @@
 import { env } from "@/env";
 import { UserContext } from "@/hooks/use-user";
+import { socket } from "@/socket";
 import { User } from "@/types/user";
 import * as React from "react";
 
@@ -19,6 +20,11 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
       if (!res.ok) throw Error;
       const data = await res.json();
       setUser(data);
+      if (socket.connected) socket.disconnect();
+      socket.io.opts.query = {
+        username,
+      };
+      socket.connect();
     } catch {
       console.error("Failed to fetch user profile");
     } finally {
