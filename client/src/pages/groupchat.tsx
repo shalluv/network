@@ -103,7 +103,17 @@ export function GroupChat() {
       fetchUsers();
     }
 
+    function handleEditMessage(msg: Message) {
+      setMessages((prev) => prev.map((m) => (m.id === msg.id ? msg : m)));
+    }
+
+    function handleDeleteMessage(msg: Message) {
+      setMessages((prev) => prev.filter((m) => m.id !== msg.id));
+    }
+
     socket.on("group message", handleGroupMessage);
+    socket.on("message edited", handleEditMessage);
+    socket.on("message deleted", handleDeleteMessage);
     socket.on("joined group", handleJoinedGroup);
 
     return () => {
@@ -218,6 +228,7 @@ export function GroupChat() {
         {messages.map((msg) => (
           <Bubble
             key={msg.id}
+            id={msg.id}
             createdAt={new Date(msg.created_at)}
             sender={users.find((u) => u.username === msg.from)}
             variant={msg.from === user?.username ? "sent" : "received"}

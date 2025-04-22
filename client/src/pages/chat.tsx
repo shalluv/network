@@ -70,7 +70,17 @@ export function Chat() {
       setMessages((prev) => [...prev, msg]);
     }
 
+    function handleEditMessage(msg: Message) {
+      setMessages((prev) => prev.map((m) => (m.id === msg.id ? msg : m)));
+    }
+
+    function handleDeleteMessage(msg: Message) {
+      setMessages((prev) => prev.filter((m) => m.id !== msg.id));
+    }
+
     socket.on("private message", handlePrivateMessage);
+    socket.on("message edited", handleEditMessage);
+    socket.on("message deleted", handleDeleteMessage);
 
     return () => {
       socket.off("private message", handlePrivateMessage);
@@ -114,6 +124,7 @@ export function Chat() {
         {messages.map((msg) => (
           <Bubble
             key={msg.id}
+            id={msg.id}
             createdAt={new Date(msg.created_at)}
             sender={msg.from === user?.username ? user : other}
             variant={msg.from === user?.username ? "sent" : "received"}

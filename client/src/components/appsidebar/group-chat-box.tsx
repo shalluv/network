@@ -11,8 +11,7 @@ import { format } from "date-fns";
 import { Message } from "@/types/message";
 
 function GroupChatBox({ group, name }: { group: string; name: string }) {
-  const [lastMessage, setLastMessage] = useState("");
-  const [lastMessageTime, setLastMessageTime] = useState("");
+  const [lastMessage, setLastMessage] = useState<Message | null>(null);
   const [joined, setJoined] = useState<boolean>(false);
   const navigate = useNavigate();
   const { groupid } = useParams();
@@ -43,8 +42,7 @@ function GroupChatBox({ group, name }: { group: string; name: string }) {
         if (!res.ok) throw Error;
         const data = await res.json();
         const last = data.length !== 0 ? data[data.length - 1] : null;
-        setLastMessage(last ? last.content : "No message yet");
-        setLastMessageTime(last ? format(last.created_at, "HH:mm") : " ");
+        setLastMessage(last ? last : null);
       } catch (err) {
         console.error("Failed to fetch messages", err);
       }
@@ -54,12 +52,21 @@ function GroupChatBox({ group, name }: { group: string; name: string }) {
 
     function handleGroupMessage(msg: Message) {
       if (msg.to === group) {
-        setLastMessage(msg.content);
-        setLastMessageTime(format(msg.created_at, "HH:mm"));
+        setLastMessage(msg);
       }
     }
 
+    function handleEditMessage(msg: Message) {
+      setLastMessage((prev) => (prev?.id === msg.id ? msg : prev));
+    }
+
+    function handleDeleteMessage() {
+      fetchMessages();
+    }
+
     socket.on("group message", handleGroupMessage);
+    socket.on("message edited", handleEditMessage);
+    socket.on("message deleted", handleDeleteMessage);
 
     return () => {
       socket.off("group message", handleGroupMessage);
@@ -135,15 +142,21 @@ function GroupChatBox({ group, name }: { group: string; name: string }) {
           <div className="flex items-center gap-2 overflow-hidden">
             <span
               className={`text-sm ${joined ? "font-light text-gray-600" : "font-semibold"} max-w-48 truncate`}
-              title={lastMessage}
+              title={lastMessage?.content}
             >
-              {lastMessage}
+              {lastMessage ? lastMessage.content : "No message yet"}
             </span>
             <span
               className={`text-sm ${joined ? "font-light text-gray-600" : "font-semibold"} flex-shrink-0 whitespace-nowrap`}
-              title={lastMessageTime}
+              title={
+                lastMessage?.created_at
+                  ? format(lastMessage.created_at, "HH:mm")
+                  : ""
+              }
             >
-              {lastMessageTime}
+              {lastMessage?.created_at
+                ? format(lastMessage.created_at, "HH:mm")
+                : ""}
             </span>
           </div>
         </div>

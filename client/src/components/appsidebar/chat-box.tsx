@@ -18,8 +18,7 @@ function ChatBox({
   image: string;
   online: boolean;
 }) {
-  const [lastMessage, setLastMessage] = useState(" ");
-  const [lastMessageTime, setLastMessageTime] = useState(" ");
+  const [lastMessage, setLastMessage] = useState<Message | null>(null);
   const navigate = useNavigate();
   const { othername } = useParams();
   const { user } = useUser();
@@ -34,8 +33,7 @@ function ChatBox({
         if (!res.ok) throw Error;
         const data = await res.json();
         const last = data.length !== 0 ? data[data.length - 1] : null;
-        setLastMessage(last ? last.content : "No message yet");
-        setLastMessageTime(last ? format(last.created_at, "HH:mm") : " ");
+        setLastMessage(last ? last : null);
       } catch (err) {
         console.error("Failed to fetch messages", err);
       }
@@ -48,12 +46,21 @@ function ChatBox({
         (msg.from === user?.username && msg.to === username) ||
         (msg.to === user?.username && msg.from === username)
       ) {
-        setLastMessage(msg.content);
-        setLastMessageTime(format(msg.created_at, "HH:mm"));
+        setLastMessage(msg);
       }
     }
 
+    function handleEditMessage(msg: Message) {
+      setLastMessage((prev) => (prev?.id === msg.id ? msg : prev));
+    }
+
+    function handleDeleteMessage() {
+      fetchMessages();
+    }
+
     socket.on("private message", handlePrivateMessage);
+    socket.on("message edited", handleEditMessage);
+    socket.on("message deleted", handleDeleteMessage);
 
     return () => {
       socket.off("private message", handlePrivateMessage);
@@ -89,15 +96,21 @@ function ChatBox({
           <div className="flex items-center gap-2 overflow-hidden">
             <span
               className={`text-sm ${!online ? "font-light text-gray-600" : "font-semibold"} max-w-48 truncate`}
-              title={lastMessage}
+              title={lastMessage ? lastMessage.content : "No message yet"}
             >
-              {lastMessage}
+              {lastMessage ? lastMessage.content : "No message yet"}
             </span>
             <span
               className={`text-sm ${!online ? "font-light text-gray-600" : "font-semibold"} flex-shrink-0 whitespace-nowrap`}
-              title={lastMessageTime}
+              title={
+                lastMessage?.created_at
+                  ? format(lastMessage.created_at, "HH:mm")
+                  : ""
+              }
             >
-              {lastMessageTime}
+              {lastMessage?.created_at
+                ? format(lastMessage.created_at, "HH:mm")
+                : ""}
             </span>
           </div>
         </div>
