@@ -61,19 +61,30 @@ function GroupChatBox({ group, name }: { group: string; name: string }) {
       <div className="flex items-center gap-3">
         <div className="relative flex w-fit">
           <div className="size-14 flex-shrink-0 rounded-full">
-            {users.slice(0, 2).map((userProfile, j) => (
+            {(users.length === 0
+              ? [null, null]
+              : users.length === 1
+                ? [users[0], null]
+                : users.slice(0, 2)
+            ).map((userProfile, j) => (
               <Avatar
-                key={userProfile.username}
+                key={userProfile?.username || `empty-${j}`}
                 className={cn(
-                  "absolute size-12",
-                  j % 2 === 0 ? "-top-1 -left-1" : "-right-1 -bottom-1",
+                  "absolute size-12 bg-white",
+                  j % 2 === 1 ? "-top-1 -left-1" : "-right-1 -bottom-1 z-10",
                 )}
               >
-                <AvatarImage
-                  src={userProfile.image}
-                  alt={userProfile.username}
-                />
-                <AvatarFallback>{userProfile.username}</AvatarFallback>
+                {userProfile ? (
+                  <>
+                    <AvatarImage
+                      src={userProfile.image}
+                      alt={userProfile.username}
+                    />
+                    <AvatarFallback>{userProfile.username}</AvatarFallback>
+                  </>
+                ) : (
+                  <AvatarFallback />
+                )}
               </Avatar>
             ))}
           </div>
