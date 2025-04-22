@@ -5,12 +5,26 @@ import { User } from "@/types/user";
 import * as React from "react";
 import { useParams } from "react-router";
 import { MessageInput } from "@/components/chat/message-input";
+import { Message } from "@/types/message";
+import { useUser } from "@/hooks/use-user";
+import { socket } from "@/socket";
 
 export function Chat() {
   const { othername } = useParams();
   const [other, setOther] = React.useState<User | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [currentMessage, setCurrentMessage] = React.useState<string>("");
+  const [messages, setMessages] = React.useState<Message[]>([]);
+  const { user } = useUser();
+  const messagesEndRef = React.useRef<HTMLDivElement | null>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  React.useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   React.useEffect(() => {
     async function fetchOther() {
@@ -30,25 +44,48 @@ export function Chat() {
     fetchOther();
   }, [othername]);
 
+  const fetchMessages = async () => {
+    console.log("Fetching messages...");
+    try {
+      const res = await fetch(
+        `${env.VITE_API_URL}/${user?.username}/${othername}/messages`,
+      );
+      if (!res.ok) throw Error;
+      const data = await res.json();
+      console.log("Fetched messages:", data);
+      setMessages(data);
+    } catch (err) {
+      console.error("Failed to fetch messages", err);
+    }
+  };
+
   React.useEffect(() => {
-    async function fetchMessages() {
-      try {
-        const res = await fetch(`${env.VITE_API_URL}/profiles/${othername}`);
-        if (!res.ok) throw Error;
-        const data = await res.json();
-        setOther(data);
-      } catch {
-        console.error("Failed to fetch profile");
-      } finally {
-        setLoading(false);
-      }
+    if (user && othername) {
+      fetchMessages();
+    }
+  }, [user, othername]);
+
+  React.useEffect(() => {
+    function handlePrivateMessage(msg: Message) {
+      setMessages((prev) => [...prev, msg]);
     }
 
-    fetchMessages();
-  }, [othername]);
+    socket.on("private message", handlePrivateMessage);
+
+    return () => {
+      socket.off("private message", handlePrivateMessage);
+    };
+  }, [othername, user?.username]);
 
   const onSend = async (message: string) => {
-    console.log("Sending message:", message);
+    if (!othername || !user) return;
+
+    setCurrentMessage("");
+
+    socket.emit("private message", {
+      content: message,
+      to: othername,
+    });
   };
 
   if (loading) {
@@ -64,25 +101,30 @@ export function Chat() {
   }
 
   return (
-    <div className="flex size-full flex-col justify-between">
-      <div className="flex w-full flex-col">
-        <header className="flex w-full items-center gap-4 border-b p-4">
-          <Avatar>
-            <AvatarImage src={other?.image} alt={othername} />
-            <AvatarFallback>{othername?.slice(0, 2)}</AvatarFallback>
-          </Avatar>
-          <h2 className="text-lg font-semibold">{othername}</h2>
-        </header>
-        <div className="flex w-full flex-col gap-2 p-4">
-          <Bubble createdAt={new Date()} sender={other} variant="received">
-            Hi
+    <div className="flex h-screen flex-col">
+      <header className="flex items-center gap-4 border-b p-4">
+        <Avatar>
+          <AvatarImage src={other?.image} alt={othername} />
+          <AvatarFallback>{othername?.slice(0, 2)}</AvatarFallback>
+        </Avatar>
+        <h2 className="text-lg font-semibold">{othername}</h2>
+      </header>
+
+      <div className="flex h-full w-full flex-col gap-2 overflow-y-auto p-4">
+        {messages.map((msg) => (
+          <Bubble
+            key={msg.id}
+            createdAt={new Date(msg.created_at)}
+            sender={msg.from === user?.username ? user : other}
+            variant={msg.from === user?.username ? "sent" : "received"}
+          >
+            {msg.content}
           </Bubble>
-          <Bubble createdAt={new Date()} variant="sent">
-            Hi back
-          </Bubble>
-        </div>
+        ))}
+        <div ref={messagesEndRef} />
       </div>
-      <div className="mb-4 flex w-full">
+
+      <div className="flex justify-center pb-4">
         <MessageInput
           value={currentMessage}
           onChange={setCurrentMessage}

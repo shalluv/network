@@ -32,7 +32,7 @@ function Bubble({
         variant === "sent" && "justify-end",
       )}
     >
-      {sender && (
+      {sender && variant === "received" && (
         <Avatar>
           <AvatarImage src={sender.image} alt={sender.username} />
           <AvatarFallback>{sender.username.slice(0, 2)}</AvatarFallback>
