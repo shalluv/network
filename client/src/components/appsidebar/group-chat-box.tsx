@@ -5,41 +5,48 @@ import { useNavigate, useParams } from "react-router";
 import { cn } from "@/lib/utils";
 import { User } from "@/types/user";
 import { env } from "@/env";
+import { useUser } from "@/hooks/use-user";
 
 function GroupChatBox({ group, name }: { group: string; name: string }) {
   const [lastMessage, setLastMessage] = useState("");
   const [lastMessageTime, setLastMessageTime] = useState("");
-  const read = false;
+  const [joined, setJoined] = useState<boolean>(false);
   const navigate = useNavigate();
   const { groupid } = useParams();
   const [users, setUsers] = useState<User[]>([]);
   const [usernames, setUsernames] = useState<string[]>([]);
+  const { user } = useUser();
 
   React.useEffect(() => {
-    async function fetchLastMessage() {
-      setLastMessage("tesetsettese4huiwueifhuiwefs");
-      setLastMessageTime("12:21");
-    }
-
     async function fetchUsers() {
       try {
         const res = await fetch(`${env.VITE_API_URL}/groups/${group}/members`);
         if (!res.ok) throw Error;
         const data = await res.json();
         setUsers(data);
-        console.log(users);
+        console.log(users, group, data);
       } catch {
         console.error("Failed to fetch all user profiles");
       }
     }
 
-    fetchLastMessage();
     fetchUsers();
   }, []);
 
   React.useEffect(() => {
     setUsernames(users.map((user) => user.username));
   }, [users]);
+
+  React.useEffect(() => {
+    async function fetchLastMessage() {
+      setLastMessage("tesetsettese4huiwueifhuiwefs");
+      setLastMessageTime("12:21");
+      console.log(user, usernames, usernames.includes(user.username));
+      setJoined(user ? !usernames.includes(user.username) : false);
+    }
+
+    fetchLastMessage();
+  }, [usernames]);
 
   return (
     <div
@@ -75,7 +82,7 @@ function GroupChatBox({ group, name }: { group: string; name: string }) {
         </div>
         <div className="flex flex-col justify-center gap-1 overflow-hidden">
           <span
-            className={`w-40 truncate ${read ? "font-normal" : "font-bold"}`}
+            className={`w-40 truncate ${joined ? "font-normal" : "font-bold"}`}
             title={name ? name : usernames.join(", ")}
           >
             {name
@@ -86,13 +93,13 @@ function GroupChatBox({ group, name }: { group: string; name: string }) {
           </span>
           <div className="flex items-center gap-2 overflow-hidden">
             <span
-              className={`text-sm ${read ? "font-light text-gray-600" : "font-semibold"} max-w-48 truncate`}
+              className={`text-sm ${joined ? "font-light text-gray-600" : "font-semibold"} max-w-48 truncate`}
               title={lastMessage}
             >
               {lastMessage}
             </span>
             <span
-              className={`text-sm ${read ? "font-light text-gray-600" : "font-semibold"} flex-shrink-0 whitespace-nowrap`}
+              className={`text-sm ${joined ? "font-light text-gray-600" : "font-semibold"} flex-shrink-0 whitespace-nowrap`}
               title={lastMessageTime}
             >
               {lastMessageTime}
@@ -101,7 +108,7 @@ function GroupChatBox({ group, name }: { group: string; name: string }) {
         </div>
       </div>
 
-      {!read && (
+      {!joined && (
         <div className="h-2 w-2 flex-shrink-0 rounded-full bg-blue-500" />
       )}
     </div>

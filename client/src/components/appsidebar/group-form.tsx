@@ -59,6 +59,7 @@ export function GroupForm() {
       reload();
       form.reset(); // reset form after submit
       setOpen(false); // close dialog
+      window.location.reload();
     } catch (error) {
       console.error(error);
       toast.error("Something went wrong");

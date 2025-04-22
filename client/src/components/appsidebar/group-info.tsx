@@ -39,6 +39,7 @@ export function GroupInfo({
         },
       );
       if (!res.ok) throw Error;
+      window.location.reload();
       toast.success("Exited group successfully");
     } catch {
       console.error("Failed to exit the group");

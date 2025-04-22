@@ -54,10 +54,10 @@ export function GroupChat() {
   const avatarCount = images.length;
   const containerWidth =
     avatarCount === 1
-      ? "w-[4.0rem]"
+      ? "w-[2.0rem]"
       : avatarCount === 2
-        ? "w-[4.8rem]"
-        : "w-[5.6rem]";
+        ? "w-[2.8rem]"
+        : "w-[3.2rem]";
 
   const handleClick = async () => {
     if (!user?.username) return;
@@ -111,20 +111,20 @@ export function GroupChat() {
           <div className="flex items-center gap-4">
             <div
               className={cn(
-                "relative h-14 flex-shrink-0 overflow-hidden rounded-full",
+                "relative h-8 flex-shrink-0 overflow-hidden rounded-full",
                 containerWidth,
               )}
             >
               {images.slice(0, 3).map((img, index) => (
                 <div
                   key={index}
-                  className="absolute"
+                  className="absolute size-8"
                   style={{
                     left: `${index * 20}%`,
                     zIndex: images.length - index,
                   }}
                 >
-                  <Avatar className="h-14 w-14">
+                  <Avatar>
                     <AvatarImage src={img} alt={usernames[index]} />
                     <AvatarFallback>
                       {usernames[index].slice(0, 2)}

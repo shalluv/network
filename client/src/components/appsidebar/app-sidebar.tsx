@@ -14,10 +14,17 @@ import { GroupChatBox } from "./group-chat-box";
 import { GroupForm } from "./group-form";
 
 function AppSidebar() {
-  const [selected, setSelected] = useState<"messages" | "groups">("messages");
+  const [selected, setSelected] = useState<"messages" | "groups">(() => {
+    const saved = localStorage.getItem("parentState");
+    return saved === "groups" || saved === "messages" ? saved : "messages";
+  });
   const [users, setUsers] = useState<User[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
   const { user } = useUser();
+
+  React.useEffect(() => {
+    localStorage.setItem("parentState", selected);
+  }, [selected]);
 
   React.useEffect(() => {
     async function fetchUsers() {

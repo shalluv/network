@@ -53,7 +53,7 @@ function MessageInput({ value, onChange, onSend }: MessageInputProps) {
       </div>
       {value.trim() === "" ? (
         <Heart
-          className="cursor-pointer"
+          className="cursor-pointer hover:fill-pink-500 active:fill-transparent"
           onClick={() => {
             onSend("💔");
           }}
