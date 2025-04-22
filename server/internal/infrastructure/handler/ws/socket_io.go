@@ -221,7 +221,7 @@ func (s *socketIo) PublishMessageEdited(message *domain.Message) {
 	// namespace := DefaultNamespace
 
 	// s.server.BroadcastToNamespace(namespace, MessageEditedEvent, message)
-	s.server.Emit(MessageDeletedEvent, message)
+	s.server.Emit(MessageEditedEvent, message)
 }
 
 func (s *socketIo) PublishJoinedGroupEvent(username string, groupId uuid.UUID) {
