@@ -6,6 +6,9 @@ import { cn } from "@/lib/utils";
 import { User } from "@/types/user";
 import { env } from "@/env";
 import { useUser } from "@/hooks/use-user";
+import { socket } from "@/socket";
+import { format } from "date-fns";
+import { Message } from "@/types/message";
 
 function GroupChatBox({ group, name }: { group: string; name: string }) {
   const [lastMessage, setLastMessage] = useState("");
@@ -33,13 +36,42 @@ function GroupChatBox({ group, name }: { group: string; name: string }) {
   }, []);
 
   React.useEffect(() => {
+    const fetchMessages = async () => {
+      console.log("Fetching messages...");
+      try {
+        const res = await fetch(`${env.VITE_API_URL}/groups/${group}/messages`);
+        if (!res.ok) throw Error;
+        const data = await res.json();
+        const last = data.length !== 0 ? data[data.length - 1] : null;
+        setLastMessage(last ? last.content : "No message yet");
+        setLastMessageTime(last ? format(last.created_at, "HH:mm") : " ");
+      } catch (err) {
+        console.error("Failed to fetch messages", err);
+      }
+    };
+
+    fetchMessages();
+
+    function handleGroupMessage(msg: Message) {
+      if (msg.to === group) {
+        setLastMessage(msg.content);
+        setLastMessageTime(format(msg.created_at, "HH:mm"));
+      }
+    }
+
+    socket.on("group message", handleGroupMessage);
+
+    return () => {
+      socket.off("group message", handleGroupMessage);
+    };
+  }, []);
+
+  React.useEffect(() => {
     setUsernames(users.map((user) => user.username));
   }, [users]);
 
   React.useEffect(() => {
     async function fetchLastMessage() {
-      setLastMessage("tesetsettese4huiwueifhuiwefs");
-      setLastMessageTime("12:21");
       setJoined(user ? !usernames.includes(user.username) : false);
     }
 

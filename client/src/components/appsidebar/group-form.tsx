@@ -24,7 +24,10 @@ import { toast } from "sonner";
 import { useUser } from "@/hooks/use-user";
 
 const formSchema = z.object({
-  groupname: z.string().max(40, "Group name is too long"),
+  groupname: z
+    .string()
+    .min(1, "group name is required")
+    .max(40, "Group name is too long"),
 });
 
 type FormSchema = z.infer<typeof formSchema>;
