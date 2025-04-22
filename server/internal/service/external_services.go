@@ -10,4 +10,5 @@ type EventPublisher interface {
 	PublishMessageEdited(chat *domain.Message)
 	PublishJoinedGroupEvent(username string, groupId uuid.UUID)
 	PublishLeftGroupEvent(username string, groupId uuid.UUID)
+	PublishGroupCreatedEvent(group *domain.Group, creator *domain.Profile)
 }

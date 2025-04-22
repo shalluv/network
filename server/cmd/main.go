@@ -43,7 +43,7 @@ func main() {
 
 	profileService := service.NewProfile(profileDB, groupDB)
 	messageService := service.NewMessage(messageDB)
-	groupService := service.NewGroup(groupDB, messageDB)
+	groupService := service.NewGroup(groupDB, messageDB, profileDB)
 
 	socketIoServer := socketio.NewServer(nil, nil)
 	socketIoHandler := ws.NewSocketIo(socketIoServer, profileService, messageService)

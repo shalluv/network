@@ -10,13 +10,15 @@ import (
 type Group struct {
 	groupRepo      domain.GroupRepository
 	messageRepo    domain.MessageRepository
+	profileRepo    domain.ProfileRepository
 	eventPublisher EventPublisher
 }
 
-func NewGroup(groupRepo domain.GroupRepository, messageRepo domain.MessageRepository) *Group {
+func NewGroup(groupRepo domain.GroupRepository, messageRepo domain.MessageRepository, profileRepo domain.ProfileRepository) *Group {
 	return &Group{
 		groupRepo:   groupRepo,
 		messageRepo: messageRepo,
+		profileRepo: profileRepo,
 	}
 }
 
@@ -26,6 +28,11 @@ func (g *Group) SetEventPublisher(eventPublisher EventPublisher) {
 }
 
 func (g *Group) CreateGroup(name string, username string) (*domain.Group, error) {
+	creator, err := g.profileRepo.FindOneByUsername(username)
+	if err != nil {
+		return nil, err
+	}
+
 	group := domain.CreateGroup(name)
 	if err := g.groupRepo.CreateGroup(group); err != nil {
 		return nil, err
@@ -35,6 +42,8 @@ func (g *Group) CreateGroup(name string, username string) (*domain.Group, error)
 	if err := g.groupRepo.AddGroupMember(groupMember); err != nil {
 		return nil, err
 	}
+
+	g.eventPublisher.PublishGroupCreatedEvent(group, creator)
 
 	return group, nil
 }

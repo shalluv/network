@@ -13,6 +13,7 @@ const (
 	GroupMessageEvent     string = "group message"
 	MessageDeletedEvent   string = "message deleted"
 	MessageEditedEvent    string = "message edited"
+	GroupCreatedEvent     string = "group created"
 	JoinedGroupEvent      string = "joined group"
 	LeftGroupEvent        string = "left group"
 	UsersEvent            string = "users"
@@ -50,4 +51,9 @@ type JoinedGroupEventMsg struct {
 type LeftGroupEventMsg struct {
 	GroupId  uuid.UUID `json:"group_id"`
 	Username string    `json:"username"`
+}
+
+type GroupCreatedEventMsg struct {
+	*domain.Group
+	Creator *domain.Profile `json:"creator"`
 }

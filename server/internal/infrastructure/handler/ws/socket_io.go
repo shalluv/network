@@ -262,3 +262,12 @@ func (s *socketIo) PublishLeftGroupEvent(username string, groupId uuid.UUID) {
 	// s.server.BroadcastToRoom(DefaultNamespace, groupId.String(), LeftGroupEvent, msg)
 	s.server.To(socketio.Room(groupId.String())).Emit(LeftGroupEvent, msg)
 }
+
+func (s *socketIo) PublishGroupCreatedEvent(group *domain.Group, creator *domain.Profile) {
+	msg := &GroupCreatedEventMsg{
+		Group:   group,
+		Creator: creator,
+	}
+
+	s.server.Emit(GroupCreatedEvent, msg)
+}
