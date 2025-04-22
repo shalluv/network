@@ -90,5 +90,5 @@ func main() {
 	// r.GET("/ws/users/:username/groups", wsHandler.GetGroupByUsername)
 	// r.DELETE("/ws/deleteGroup/:groupId", wsHandler.DeleteGroup)
 
-	r.Run(fmt.Sprintf(":%d", config.Port))
+	r.Run(fmt.Sprintf("0.0.0.0:%d", config.Port))
 }
