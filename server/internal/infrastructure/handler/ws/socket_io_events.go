@@ -19,7 +19,7 @@ const (
 )
 
 type UserConnectedEventMsg struct {
-	Username string `json:"username"`
+	*domain.Profile
 }
 
 type UserDisconnectedEventMsg struct {

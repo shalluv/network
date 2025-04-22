@@ -59,6 +59,12 @@ func (s *socketIo) OnConnect(clients ...any) {
 		return
 	}
 
+	userProfile, err := s.profileService.GetUserProfile(username)
+	if err != nil {
+		log.Printf("failed to get user profile: %v", err)
+		return
+	}
+
 	//s.server.JoinRoom(DefaultNamespace, username, conn)
 	conn.Join(socketio.Room(username))
 	for _, group := range groups {
@@ -71,7 +77,7 @@ func (s *socketIo) OnConnect(clients ...any) {
 
 	s.mu.Lock()
 	if len(s.userConns[username]) == 0 {
-		msg := UserConnectedEventMsg{Username: username}
+		msg := UserConnectedEventMsg{userProfile}
 		//s.server.BroadcastToNamespace(DefaultNamespace, "user connected", &msg)
 		s.server.Emit("user connected", &msg)
 	}
