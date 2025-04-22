@@ -67,7 +67,12 @@ export function Chat() {
 
   React.useEffect(() => {
     function handlePrivateMessage(msg: Message) {
-      setMessages((prev) => [...prev, msg]);
+      if (
+        (msg.from === user?.username && msg.to === othername) ||
+        (msg.to === user?.username && msg.from === othername)
+      ) {
+        setMessages((prev) => [...prev, msg]);
+      }
     }
 
     function handleEditMessage(msg: Message) {

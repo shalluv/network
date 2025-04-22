@@ -144,7 +144,11 @@ function GroupChatBox({ group, name }: { group: string; name: string }) {
               className={`text-sm ${joined ? "font-light text-gray-600" : "font-semibold"} max-w-48 truncate`}
               title={lastMessage?.content}
             >
-              {lastMessage ? lastMessage.content : "No message yet"}
+              {!joined
+                ? lastMessage
+                  ? lastMessage.content
+                  : "No message yet"
+                : "You are not in the group"}
             </span>
             <span
               className={`text-sm ${joined ? "font-light text-gray-600" : "font-semibold"} flex-shrink-0 whitespace-nowrap`}
@@ -155,7 +159,9 @@ function GroupChatBox({ group, name }: { group: string; name: string }) {
               }
             >
               {lastMessage?.created_at
-                ? format(lastMessage.created_at, "HH:mm")
+                ? !joined
+                  ? format(lastMessage.created_at, "HH:mm")
+                  : ""
                 : ""}
             </span>
           </div>

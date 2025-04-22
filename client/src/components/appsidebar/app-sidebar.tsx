@@ -51,10 +51,28 @@ function AppSidebar() {
     function handleUsers(usernames: string[]) {
       setOnlineUsernames(usernames);
     }
-    function handleConnected({ username }: { username: string }) {
+    function handleConnected({
+      username,
+      image,
+    }: {
+      username: string;
+      image: string;
+    }) {
       setOnlineUsernames((prev) => {
         if (!prev.includes(username)) {
           return [...prev, username];
+        }
+        return prev;
+      });
+
+      const user: User = {
+        username: username,
+        image: image,
+      };
+
+      setUsers((prev) => {
+        if (!prev.some((u) => u.username === user.username)) {
+          return [...prev, user];
         }
         return prev;
       });
@@ -64,11 +82,25 @@ function AppSidebar() {
       setOnlineUsernames((prev) => prev.filter((user) => user !== username));
     }
 
+    function handleGroupCreated({ id, name }: { id: string; name: string }) {
+      const group: Group = {
+        id: id,
+        name: name,
+      };
+      setGroups((prev) => {
+        if (!prev.some((u) => u.id === group.id)) {
+          return [...prev, group];
+        }
+        return prev;
+      });
+    }
+
     fetchUsers();
     fetchGroups();
     socket.on("users", handleUsers);
     socket.on("user connected", handleConnected);
     socket.on("user disconnected", handleDisconnected);
+    socket.on("group created", handleGroupCreated);
 
     const handleDisconnect = () => {
       socket.emit("disconnect");
