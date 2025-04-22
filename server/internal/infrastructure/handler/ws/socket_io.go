@@ -81,8 +81,13 @@ func (s *socketIo) OnConnect(clients ...any) {
 			return
 		}
 
-		arg := args[0].(string)
-		s.SendPrivateMessage(conn, arg)
+		inputBytes, err := json.Marshal(args[0])
+		if err != nil {
+			log.Printf("failed to get input bytes: %v", err)
+			return
+		}
+
+		s.SendPrivateMessage(conn, inputBytes)
 	})
 
 	conn.On(GroupMessageEvent, func(args ...interface{}) {
@@ -91,8 +96,12 @@ func (s *socketIo) OnConnect(clients ...any) {
 			return
 		}
 
-		arg := args[0].(string)
-		s.SendGroupMessage(conn, arg)
+		inputBytes, err := json.Marshal(args[0])
+		if err != nil {
+			log.Printf("failed to get input bytes: %v", err)
+			return
+		}
+		s.SendGroupMessage(conn, inputBytes)
 	})
 
 	conn.On("disconnect", func(...any) {
@@ -105,9 +114,9 @@ type MessageInput struct {
 	Content string `json:"content"`
 }
 
-func (s *socketIo) SendPrivateMessage(conn *socketio.Socket, msg string) {
+func (s *socketIo) SendPrivateMessage(conn *socketio.Socket, msg []byte) {
 	input := &MessageInput{}
-	err := json.Unmarshal([]byte(msg), input)
+	err := json.Unmarshal(msg, input)
 	if err != nil {
 		log.Printf("send private message unmarshal err: %v", err)
 		return
@@ -129,9 +138,9 @@ func (s *socketIo) SendPrivateMessage(conn *socketio.Socket, msg string) {
 	s.server.To(socketio.Room(input.To)).Emit(PrivateMessageEvent, eventMsg)
 }
 
-func (s *socketIo) SendGroupMessage(conn *socketio.Socket, msg string) {
+func (s *socketIo) SendGroupMessage(conn *socketio.Socket, msg []byte) {
 	input := &MessageInput{}
-	err := json.Unmarshal([]byte(msg), input)
+	err := json.Unmarshal(msg, input)
 	if err != nil {
 		log.Printf("send private message unmarshal err: %v", err)
 		return
