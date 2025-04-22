@@ -231,9 +231,15 @@ func (s *socketIo) PublishMessageEdited(message *domain.Message) {
 }
 
 func (s *socketIo) PublishJoinedGroupEvent(username string, groupId uuid.UUID) {
+	user, err := s.profileService.GetUserProfile(username)
+	if err != nil {
+		log.Printf("publish joined group: %v", err)
+		return
+	}
+
 	msg := &JoinedGroupEventMsg{
-		GroupId:  groupId,
-		Username: username,
+		GroupId: groupId,
+		User:    user,
 	}
 	// s.server.BroadcastToRoom(DefaultNamespace, groupId.String(), JoinedGroupEvent, msg)
 	s.server.To(socketio.Room(groupId.String())).Emit(JoinedGroupEvent, msg)
@@ -247,9 +253,15 @@ func (s *socketIo) PublishJoinedGroupEvent(username string, groupId uuid.UUID) {
 }
 
 func (s *socketIo) PublishLeftGroupEvent(username string, groupId uuid.UUID) {
+	user, err := s.profileService.GetUserProfile(username)
+	if err != nil {
+		log.Printf("publish left group: %v", err)
+		return
+	}
+
 	msg := &LeftGroupEventMsg{
-		GroupId:  groupId,
-		Username: username,
+		GroupId: groupId,
+		User:    user,
 	}
 
 	s.mu.Lock()

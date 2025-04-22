@@ -44,13 +44,13 @@ type MessageEditedEventMsg struct {
 }
 
 type JoinedGroupEventMsg struct {
-	GroupId  uuid.UUID `json:"group_id"`
-	Username string    `json:"username"`
+	GroupId uuid.UUID       `json:"group_id"`
+	User    *domain.Profile `json:"user"`
 }
 
 type LeftGroupEventMsg struct {
-	GroupId  uuid.UUID `json:"group_id"`
-	Username string    `json:"username"`
+	GroupId uuid.UUID       `json:"group_id"`
+	User    *domain.Profile `json:"user"`
 }
 
 type GroupCreatedEventMsg struct {
