@@ -136,6 +136,7 @@ func (s *socketIo) SendPrivateMessage(conn *socketio.Socket, msg []byte) {
 
 	//s.server.BroadcastToRoom(DefaultNamespace, input.To, PrivateMessageEvent, eventMsg)
 	s.server.To(socketio.Room(input.To)).Emit(PrivateMessageEvent, eventMsg)
+	s.server.To(socketio.Room(username)).Emit(PrivateMessageEvent, eventMsg)
 }
 
 func (s *socketIo) SendGroupMessage(conn *socketio.Socket, msg []byte) {
