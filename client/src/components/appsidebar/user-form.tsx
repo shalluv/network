@@ -72,8 +72,10 @@ export function UserForm() {
       });
       if (!res.ok) throw new Error("Failed to edit profile");
       toast.success("Profile updated successfully");
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       reload();
       setOpen(false);
+      window.location.reload();
     } catch (error) {
       console.error(error);
     }

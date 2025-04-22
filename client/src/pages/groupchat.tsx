@@ -11,6 +11,7 @@ import { useUser } from "@/hooks/use-user";
 import { EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { Group } from "@/types/group";
 
 export function GroupChat() {
   const { groupid } = useParams();
@@ -20,6 +21,7 @@ export function GroupChat() {
   const [loading, setLoading] = React.useState(true);
   const [currentMessage, setCurrentMessage] = React.useState<string>("");
   const { user, reload } = useUser();
+  const [groupName, setGroupName] = React.useState<string>("");
 
   React.useEffect(() => {
     async function fetchUsers() {
@@ -39,7 +41,25 @@ export function GroupChat() {
       }
     }
 
+    async function getGroupName() {
+      if (!groupid) return;
+      try {
+        const res = await fetch(`${env.VITE_API_URL}/groups`);
+        if (!res.ok) throw Error;
+        const data = await res.json();
+        const group = data.find((item: Group) => item.id === groupid);
+        if (group) {
+          setGroupName(group.name);
+        }
+      } catch {
+        console.error("Failed to get group name");
+      } finally {
+        setLoading(false);
+      }
+    }
+
     fetchUsers();
+    getGroupName();
   }, [groupid]);
 
   React.useEffect(() => {
@@ -70,9 +90,11 @@ export function GroupChat() {
         body: JSON.stringify({ username: user.username }),
       });
       if (!res.ok) throw Error;
-      window.location.reload();
+
       toast.success("Joined group successfully");
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       reload();
+      window.location.reload();
     } catch {
       console.error("Failed to join the group");
     }
@@ -137,7 +159,7 @@ export function GroupChat() {
               className={"max-w-xl truncate text-lg font-semibold"}
               title={usernames.join(", ")}
             >
-              {usernames.join(", ")}
+              {groupName ? groupName : usernames.join(", ")}
             </span>
           </div>
           <GroupInfo groupid={groupid} users={users} />

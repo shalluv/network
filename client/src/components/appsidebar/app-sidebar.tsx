@@ -1,5 +1,4 @@
 import { Sidebar, SidebarContent } from "@/components/ui/sidebar";
-import { SquarePen } from "lucide-react";
 import { useState } from "react";
 import { ChatBox } from "./chat-box";
 import { User } from "@/types/user";
@@ -8,8 +7,6 @@ import React from "react";
 import { env } from "@/env";
 import { UserForm } from "./user-form";
 import { useUser } from "@/hooks/use-user";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { cn } from "@/lib/utils";
 import { GroupChatBox } from "./group-chat-box";
 import { GroupForm } from "./group-form";
 
