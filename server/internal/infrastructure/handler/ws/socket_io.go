@@ -33,6 +33,7 @@ func NewSocketIo(server *socketio.Server, profileService *service.Profile, messa
 func (s *socketIo) OnConnect(conn socketio.Conn) error {
 	queryParams, err := url.ParseQuery(conn.URL().RawQuery)
 	if err != nil {
+		log.Printf("on connect err: %v", err)
 		return err
 	}
 	usernames, ok := queryParams["username"]
