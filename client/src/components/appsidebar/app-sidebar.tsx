@@ -1,4 +1,8 @@
-import { Sidebar, SidebarContent } from "@/components/ui/sidebar";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+} from "@/components/ui/sidebar";
 import { useState } from "react";
 import { ChatBox } from "./chat-box";
 import { User } from "@/types/user";
@@ -10,6 +14,7 @@ import { useUser } from "@/hooks/use-user";
 import { GroupChatBox } from "./group-chat-box";
 import { GroupForm } from "./group-form";
 import { socket } from "@/socket";
+import { toast } from "sonner";
 
 function AppSidebar() {
   const [selected, setSelected] = useState<"messages" | "groups">(() => {
@@ -113,6 +118,13 @@ function AppSidebar() {
     };
   }, []);
 
+  const handleLogout = async () => {
+    localStorage.removeItem("username");
+    toast.success("Logged out successfully");
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    window.location.reload();
+  };
+
   return (
     <Sidebar>
       <div className="mt-8 flex w-full justify-between px-4 text-2xl">
@@ -164,6 +176,16 @@ function AppSidebar() {
           )}
         </div>
       </SidebarContent>
+      <SidebarFooter>
+        <div className="flex h-14 items-center border-t-[1px] p-4">
+          <p
+            className="cursor-pointer font-semibold text-red-500"
+            onClick={() => handleLogout()}
+          >
+            logout
+          </p>
+        </div>
+      </SidebarFooter>
     </Sidebar>
   );
 }
