@@ -99,8 +99,21 @@ export function GroupChat() {
       setMessages((prev) => [...prev, msg]);
     }
 
-    function handleJoinedGroup() {
-      fetchUsers();
+    function handleJoinedGroup({
+      group_id,
+      user,
+    }: {
+      group_id: string;
+      user: User;
+    }) {
+      if (group_id == groupid) {
+        setUsers((prev) => {
+          if (!prev.some((u) => u.username === user.username)) {
+            return [...prev, user];
+          }
+          return prev;
+        });
+      }
     }
 
     function handleEditMessage(msg: Message) {
