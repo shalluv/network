@@ -219,8 +219,12 @@ export function GroupChat() {
                 }}
               >
                 <Avatar>
-                  <AvatarImage src={img} alt={usernames[index]} />
-                  <AvatarFallback>
+                  <AvatarImage
+                    src={img}
+                    alt={usernames[index]}
+                    className="border-[1px]"
+                  />
+                  <AvatarFallback className="border-[1px]">
                     {usernames[index].slice(0, 2)}
                   </AvatarFallback>
                 </Avatar>
