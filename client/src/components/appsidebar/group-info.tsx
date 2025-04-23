@@ -66,7 +66,7 @@ export function GroupInfo({ groupid }: { groupid: string | undefined }) {
     fetchUsers();
     socket.on("joined group", handleJoinedGroup);
     socket.on("left group", handleLeftGroup);
-  }, []);
+  }, [groupid]);
 
   const HandleLeave = async () => {
     console.log(user?.username);
